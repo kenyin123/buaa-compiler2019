@@ -38,8 +38,9 @@ enum SYMBOL {
 	INT = 22,
 	STRING = 23,
 	CHARACTER = 24,
+	SPACE = 25,
 
-	CONST = 30,
+	CONSTSY = 30,
 	INTSY = 31,
 	CHARSY = 32,
 	VOIDSY = 33,
@@ -51,7 +52,7 @@ enum SYMBOL {
 	DEFAULTSY = 39,
 	SCANFSY = 40,
 	PRINTFSY = 41,
-	RETURN = 42,
+	RETURNSY = 42,
 	
 }symbol;
 
@@ -173,14 +174,20 @@ int transNum(char a[]) {
 	return atoi(a);
 }
 void error(int i) {
-	printf("error %n",i);
+	printf("error %d",i);
 }
 
 int getsym()
 {
 	clearToken();
-	while (isSpace(ch) || isNewline(ch) || isTab(ch))
-		ch = fgetc(fp);									
+	if (isSpace(ch) || isNewline(ch) || isTab(ch)) {
+		symbol = SPACE;
+		while (isSpace(ch) || isNewline(ch) || isTab(ch)) {
+			ch = fgetc(fp);
+		}
+		retract(ch);
+		return 0;
+	}
 	if (isLetter(ch))
 	{
 		while (isLetter(ch) || isDigit(ch))
@@ -270,7 +277,7 @@ int getsym()
 	return 0;
 }
 int main() {
-	fp = fopen("1.txt", "r");
+	fp = fopen("1.c", "r");
 	ch = fgetc(fp);
 	while (ch != EOF) {
 		getsym();
@@ -284,7 +291,7 @@ int main() {
 		case 5:printf("colon :"); break;
 		case 6:printf("SEMI ;"); break;
 		case 7:printf("COMMA ,"); break;
-		case 8:printf("LPAR )"); break;
+		case 8:printf("LPAR ("); break;
 		case 9:printf("RPAR)"); break;
 		case 10:printf("LMPAR ["); break;
 		case 11:printf("RMPAR ]"); break;
@@ -301,11 +308,25 @@ int main() {
 		case 22:printf("integer %s", token); break;
 		case 23:printf("string %s", token); break;
 		case 24:printf("char"); break;
-		default:printf("else");
+		case 25:printf("space"); break;
+		case 30:printf("CONSTSY const"); break;
+		case 31:printf("INTSY int"); break;
+		case 32:printf("CHARSY char"); break;
+		case 33:printf("VOIDSY void"); break;
+		case 34:printf("MAINSY main"); break;
+		case 35:printf("IFSY if"); break;
+		case 36:printf("WHILESY while"); break;
+		case 37:printf("SWITCHSY switch"); break;
+		case 38:printf("CASESY case"); break;
+		case 39:printf("DEFAULTSY default"); break;
+		case 40:printf("SCANFSY scanf"); break;
+		case 41:printf("PRINTFSY printf"); break;
+		case 42:printf("RETURNSY return"); break;
 		}
 		printf("\n");
 		ch = fgetc(fp);
 	}
+	
 	system("pause");
 	return 0;
 
