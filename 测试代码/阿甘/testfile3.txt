@@ -1,0 +1,95 @@
+const int a = 0;
+const char c1 = 'a';
+int b,c ;
+char c2 ,c3,c4,c5;
+
+void function1()
+{
+    const int f1 = 0;
+    int f2[3],b,a;
+    char f3[3];
+    a = 4;
+    b = a/2;
+    f2[1] = b;
+    if(3>2){
+        b = a;
+    }
+    else{
+        b = 2*a;
+    }
+    if(b==a){}
+    if(b>=a){}
+    if(b<a){}
+    if(b<=a){}
+    if(b!=a){}
+}
+
+void function2(int c)
+{
+    const int f1 = 0;
+    int f2[3],a,b;
+    char f3[3];
+    a = 4;
+    b = c/2;
+    f2[1] = b;
+    if(3>2){
+        b = c;
+    }
+    else{
+        b = 2*c;
+    }
+}
+
+int function3()
+{
+    const int f1 = 0;
+    int f2[3],a,b;
+    char f3[3];
+    a = 4;
+    b = c/2;
+    f2[1] = b;
+    if(3>2){
+        b = c;
+    }
+    else{
+        b = 2*c;
+    }
+    return (b);
+}
+
+char function4(char c)
+{
+    return (c);
+}
+
+void main()
+{   
+    int sb[10];
+    int sss,k,j,l;
+    char num ;
+    num = 'a';
+    k = 10;
+    j = 0;
+    l = 1;
+    scanf(sss);
+    printf("%s\n",sss);
+    printf(sss);
+    printf("------\n");
+    
+    while(k>0){
+        sb[k-1] = k;
+        k = k - 1;
+    }
+    function1();
+    function2(k);
+    j = function3();
+    num = function4(num);
+
+    do{
+        if(l==1){
+            j = j+1;
+        }
+    }
+    while(j<k);
+
+}

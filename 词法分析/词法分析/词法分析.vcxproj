@@ -123,10 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="词法分析.cpp" />
+    <ClCompile Include="lexical.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="词法分析.h" />
+    <ClInclude Include="lexical.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,125 @@
+const int const_num1 = 10,const_num2 = 12;
+const char const_c1 = 'K',const_c2 = 'a';
+int varn;
+char varc;
+int fibo(int n){
+    if(n==1)
+        return (1);
+    else if(n==2)
+        return (1);
+    else
+        return(fibo(n-1)+fibo(n-2));
+}
+void test_expression(){
+    int int_test1, int_test2, int_test3, int_test4, int_test5, int_test6;
+    int_test1 = +4 * 'c' - 6/fibo(2);
+    int_test2 = -5 + '+' - '9';
+    int_test3 = --5 + 90;
+    int_test4 = -+5;
+    int_test5 = -0 + 9;
+    int_test6 = +0 + +9 + -5;
+
+    printf("exp must be 390:",int_test1);
+    printf("exp must be -19:",int_test2);
+    printf("exp must be 95:",int_test3);
+    printf("exp must be -5:",int_test4);
+    printf("exp must be 9:",int_test5);
+    printf("exp must be 4:",int_test6);
+
+	return;
+}
+int add(int m,int n,int k){
+	return (m+n+k);
+}
+void test_call(){
+    printf("call_add must be -2:", add(3,fibo(3),-8));
+    printf("call_add must be 10:",add(fibo(3),fibo(4),fibo(5)));
+    ;;
+    ;
+	return;
+}
+char test_print(){
+	printf(2+6);
+	printf('b');
+	printf('b'+0);
+	printf(-5*2);
+	printf(18/3);
+	printf(" !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{|}~");
+	return ('2');
+}
+
+void test_more_para(char a,int k,int m,int l,int p){
+    int i,_;
+    _ = 1;
+    for(i=k;i>0;i=i-1){
+        _ = _+i;
+    }
+    printf(k+l+m+p);
+}
+void test_keywords(){
+	const int Main = 5,InT = -9,VOID = 8;
+	const char CHAr = 'a';
+	printf("test_keywords: Answer should be 101",Main+InT+VOID+CHAr);
+
+}
+void test_if_else(){
+	int i,j,k,m;
+	scanf(i,j,k);
+	if(i>=j){
+		if(k<=i){
+			m=i;
+		}
+		else m=k;
+	}
+	else{
+		if(k<j){
+			m=j;
+		}
+		else{
+			m=k;
+		}
+	}
+	if(m==i){
+		printf("The biggest num is i:",m);
+	}
+	else {
+		if(m!=j) printf("The biggest num is k:",m);
+		else printf("The biggest num is j:",m); 
+	}
+}
+void test_loop(int n){
+	int i,num_list[10],j;
+	j=0;
+	for(i=n;i;i=i-1){
+		num_list[j] = i;
+		j=j+1;
+	}
+	do{
+		printf(num_list[i]);
+		i=i+1;
+	}
+	while(i<j)
+
+        i = 0;
+
+        while(i<j){
+            printf(num_list[i]);
+	    i=i+1;
+        }
+}
+
+void main(){
+	const int const_num3 = 14,const_num4 = -16;
+	const char c3 = '1';
+	char c4;
+	test_expression();
+	c4=test_print();
+	printf("Ans should be '2' ",c4);
+	test_call();
+	test_more_para(const_c2,const_num1,const_num2,const_num3,const_num4);
+	test_keywords();
+	test_if_else();
+	test_loop(const_num3-8);
+	
+	
+}

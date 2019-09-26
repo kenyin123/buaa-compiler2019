@@ -1,0 +1,6 @@
+﻿  源.cpp
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(216,3): error C3861:  “Expression”: 找不到标识符
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(223,17): error C2065:  “UNSIGNED_INT”: 未声明的标识符
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(227,16): error C2065:  “MINUS”: 未声明的标识符
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(229,17): error C2065:  “UNSIGNED_INT”: 未声明的标识符
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(241,16): error C2065:  “IFSY”: 未声明的标识符
