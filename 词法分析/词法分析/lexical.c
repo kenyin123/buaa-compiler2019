@@ -218,16 +218,17 @@ int getsym()
 			}
 			retract(ch);
 			int_get = 0;
-			return 0;
 		}
-		while (isDigit(ch))
-		{
-			catToken(ch);
-			ch = fgetc(fp_in);
+		else {
+			while (isDigit(ch))
+			{
+				catToken(ch);
+				ch = fgetc(fp_in);
+			}
+			retract(ch);
+			int_get = transNum(token);
+			symbol = INTCON;
 		}
-		retract(ch);
-		int_get = transNum(token);
-		symbol = INTCON;
 	}
 	else if (isPlus(ch)) symbol = PLUS;
 	else if (isMinu(ch)) symbol = MINU;
@@ -308,7 +309,6 @@ int main() {
 		getsym();
 		sym = (int)symbol;
 		switch (sym) {
-		/*
 		case 0:break;
 		case 1:fprintf(fp_out, "\nIDENFR %s", token); break;
 		case 2:fprintf(fp_out, "\nINTCON %d", int_get); break;
@@ -346,8 +346,7 @@ int main() {
 		case 34:fprintf(fp_out, "\nRBRACK ]"); break;
 		case 35:fprintf(fp_out, "\nLBRACE {"); break;
 		case 36:fprintf(fp_out, "\nRBRACE }"); break;
-		
-		*/
+		/*
 		case 0:break;
 		case 1:printf("\nIDENFR %s", token); break;
 		case 2:printf("\nINTCON %d", int_get); break;
@@ -385,6 +384,8 @@ int main() {
 		case 34:printf("\nRBRACK ]"); break;
 		case 35:printf("\nLBRACE {"); break;
 		case 36:printf("\nRBRACE }"); break;
+		*/
+		
 		}
 		if(sym!=0)ch = fgetc(fp_in);
 	}

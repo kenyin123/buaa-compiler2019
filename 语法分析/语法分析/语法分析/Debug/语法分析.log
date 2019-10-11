@@ -1,6 +1,6 @@
-﻿  源.cpp
-D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(47): warning C4715:  “Grammar_int”: 不是所有的控件路径都返回值
-D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(214): warning C4715:  “Var_Declaration”: 不是所有的控件路径都返回值
-D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(275): warning C4715:  “Factor”: 不是所有的控件路径都返回值
-D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\源.cpp(308): warning C4715:  “Expression”: 不是所有的控件路径都返回值
+﻿  grammar.c
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\grammar.c(461): warning C4715:  “Grammar_int”: 不是所有的控件路径都返回值
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\grammar.c(636): warning C4715:  “Var_Declaration”: 不是所有的控件路径都返回值
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\grammar.c(704): warning C4715:  “Factor”: 不是所有的控件路径都返回值
+D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\语法分析\grammar.c(740): warning C4715:  “Expression”: 不是所有的控件路径都返回值
   语法分析.vcxproj -> D:\study\code\compiler\Principle-of-Compiler\语法分析\语法分析\Debug\语法分析.exe
