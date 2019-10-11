@@ -1,17 +1,20 @@
 #pragma once
 #include<stdio.h>
-#include<conio.h>
+//#include<conio.h>
 #include<math.h>
 #include<string.h>
 #include<stdlib.h>
 #include <ctype.h>
 
-FILE* fp;
+#define idlen 64
+#define tab_size 512
+
+FILE* fp_in;
+FILE* fp_out;
 char ch;//最新读取到的字符
 int num_line = 1;//代码行数
-char token[100];//截取的一段，字符串或者数字等
-
-char string_get[500];//暂存字符串
+char token[50000];//截取的一段，字符串或者数字等
+char string_get[50000];//暂存字符串
 int string_get_length;//暂存字符串长度
 int int_get;//暂存数字
 char char_get;//暂存char
@@ -23,6 +26,7 @@ char pro[13][20] = { "const","int","char","void","main","if","else","do","while"
 }; //保留字表
 
 enum SYMBOL {
+	UNKNOWN = 0,
 	IDENFR = 1,//标识符
 	INTCON = 2,//整型常量
 	CHARCON = 3,//字符常量
@@ -59,11 +63,36 @@ enum SYMBOL {
 	RBRACK = 34,//]
 	LBRACE = 35,//{
 	RBRACE = 36,//}
-
-	SPACE = 40,
-	NEWLINE = 41,
-	TAB = 42
 }symbol;
+
+struct TAB {
+	char idenfy[idlen];
+	/*
+	0:int常量
+	1:char常量
+	2:int变量
+	3:char变量
+	4:int数组
+	5:char数组
+	6:int函数
+	7:char函数
+	8:void函数
+	9:int参数
+	10:char参数
+	*/
+	int type;
+	int value;//值或者长度
+	int addr;//idenfy首地址或者相对偏移地址
+	int size;//占用空间大小
+	int lev;//作用域结构层次
+};
+struct TAB tab[tab_size];
+int type = 0;
+int value = 0;
+int addr = 0;
+int lev = 0;
+int tab_location = 0;
+
 
 void clear() {
 	int i = 0;
@@ -163,12 +192,19 @@ int isExclamation(char a) {
 	else return 0;
 }
 
+int isRelation(SYMBOL symbol) {
+	if (symbol == LSS || symbol == LEQ || symbol == GRE || symbol == GEQ || symbol == EQL || symbol == NEQ) {
+		return 1;
+	}
+	return 0;
+}
+
 void catToken(char a) {//截取一串字符
 	token[strlen(token)] = a;
 }
 
 void retract(char a) { //退回文件流
-	ungetc(a, fp);
+	ungetc(a, fp_in);
 }
 int reserver(char a[]) { //返回保留字识别码
 	for (int i = 0; i < 13; i++) {
@@ -182,32 +218,33 @@ int transNum(char a[]) {
 	return atoi(a);
 }
 void error(int i) {
-	printf("error %d", i);
+	printf("error %d", num_line);
+	exit(-1);
 }
 
-int getsym();
 int getsym()
 {
+	ch = fgetc(fp_in);
+	symbol = UNKNOWN;
 	clear();
-	if (isSpace(ch)) {
-		symbol = SPACE;
-		return 0;
-	}
-	if (isTab(ch)) {
-		symbol = TAB;
-		return 0;
-	}
-	if (isNewline(ch)) {
-		symbol = NEWLINE;
-		num_line++;
-		return 0;
+	while (isSpace(ch) || isTab(ch) || isNewline(ch)) {
+		if (isSpace(ch)) {
+			ch = fgetc(fp_in);
+		}
+		if (isTab(ch)) {
+			ch = fgetc(fp_in);
+		}
+		if (isNewline(ch)) {
+			num_line++;
+			ch = fgetc(fp_in);
+		}
 	}
 	if (isLetter(ch))
 	{
 		while (isLetter(ch) || isDigit(ch))
 		{
 			catToken(ch);
-			ch = fgetc(fp);
+			ch = fgetc(fp_in);
 		}
 		retract(ch);
 		int resultValue = reserver(token);
@@ -219,7 +256,7 @@ int getsym()
 		if (ch == '0') {
 			catToken(ch);
 			symbol = INTCON;
-			ch = fgetc(fp);
+			ch = fgetc(fp_in);
 			if (isDigit(ch)) {
 				error(0);
 			}
@@ -230,7 +267,7 @@ int getsym()
 		while (isDigit(ch))
 		{
 			catToken(ch);
-			ch = fgetc(fp);
+			ch = fgetc(fp_in);
 		}
 		retract(ch);
 		int_get = transNum(token);
@@ -249,7 +286,7 @@ int getsym()
 	else if (isComma(ch)) symbol = COMMA;
 	else if (isSemi(ch)) symbol = SEMICN;
 	else if (isAssign(ch)) {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (isAssign(ch)) symbol = EQL;
 		else
 		{
@@ -258,7 +295,7 @@ int getsym()
 		}
 	}
 	else if (isLss(ch)) {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (isAssign(ch)) symbol = LEQ;
 		else
 		{
@@ -267,7 +304,7 @@ int getsym()
 		}
 	}
 	else if (isGre(ch)) {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (isAssign(ch)) symbol = GEQ;
 		else
 		{
@@ -276,48 +313,116 @@ int getsym()
 		}
 	}
 	else if (ch == '\"') {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		string_get_length = 0;
 		while (ch == 32 || ch == 33 || (ch >= 35 && ch <= 126)) {
 			string_get[string_get_length] = ch;
 			string_get_length++;
-			ch = fgetc(fp);
+			ch = fgetc(fp_in);
 		}
 		if (ch != '\"') error(0);
 		symbol = STRCON;
 	}
 	else if (isQuotation(ch)) {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (isDigit(ch) || isLetter(ch) || (ch == '*') || (ch == '/') || (ch == '+') || (ch == '-'))symbol = CHARCON;
 		else error(0);
 		char_get = ch;
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (ch != '\'')error(0);
 	}
 	else if (isExclamation(ch)) {
-		ch = fgetc(fp);
+		ch = fgetc(fp_in);
 		if (isAssign(ch)) {
 			symbol = NEQ;
 		}
 	}
+	else if (ch == EOF) {
+		symbol = UNKNOWN;
+	}
 	else error(0);
-	//printf("%d\n", (int)symbol);
+	switch ((int)symbol) {
+	case 0:printf("UNKNOWN\n"); break;
+	case 1:printf("IDENFR %s\n", token); break;
+	case 2:printf("INTCON %d\n", int_get); break;
+	case 3:printf("CHARCON %c\n", char_get); break;
+	case 4:printf("STRCON %s\n", string_get); break;
+	case 5:printf("CONSTTK const\n"); break;
+	case 6:printf("INTTK int\n"); break;
+	case 7:printf("CHARTK char\n"); break;
+	case 8:printf("VOIDTK void\n"); break;
+	case 9:printf("MAINTK main\n"); break;
+	case 10:printf("IFTK if\n"); break;
+	case 11:printf("ELSETK else\n"); break;
+	case 12:printf("DOTK do\n"); break;
+	case 13:printf("WHILETK while\n"); break;
+	case 14:printf("FORTK for\n"); break;
+	case 15:printf("SCANFTK scanf\n"); break;
+	case 16:printf("PRINTFTK printf\n"); break;
+	case 17:printf("RETURNTK return\n"); break;
+	case 18:printf("PLUS +\n"); break;
+	case 19:printf("MINU -\n"); break;
+	case 20:printf("MULT *\n"); break;
+	case 21:printf("DIV /\n"); break;
+	case 22:printf("LSS <\n"); break;
+	case 23:printf("LEQ <=\n"); break;
+	case 24:printf("GRE >\n"); break;
+	case 25:printf("GEQ >=\n"); break;
+	case 26:printf("EQL ==\n"); break;
+	case 27:printf("NEQ !=\n"); break;
+	case 28:printf("ASSIGN =\n"); break;
+	case 29:printf("SEMICN ;\n"); break;
+	case 30:printf("COMMA ,\n"); break;
+	case 31:printf("LPARENT (\n"); break;
+	case 32:printf("RPARENT )\n"); break;
+	case 33:printf("LBRACK [\n"); break;
+	case 34:printf("RBRACK ]\n"); break;
+	case 35:printf("LBRACE {\n"); break;
+	case 36:printf("RBRACE }\n"); break;
+	}
 	return 0;
 }
 
-/*
-int Check_int();
+
+int Grammar_unsigned_int(); 
+int Grammar_int();
 int Const_Definition();
 int Const_Declaration();
+int Var_Definition();
 int Var_Declaration();
+
 int Factor();
 int Term();
 int Expression();
 
+void paramHandler();
+
+void statementHandler();
+void statement_list();
+void complex_statement();
+
+void condition();
+void if_Handler();
+void while_Handler();
+void do_while_Handler();
+int step_length();
+void for_Handler();
+void value_param_list();
+void call_fun_Handler();
+void assign_Handler();
+void scanf_Handler();
+void printf_Handler();
+void return_Handler();
+//void empty_Handler();
+void returned_func_definition();
+int unreturn_func_definition();
+void mainfunc();
+void program();
+
+
+
+/*
+void entertab(char* idenfy, int type, int value, int addr, int lev);
+int searchtab(char* idenfy, int filed);
+void printtab();
 */
-int Returned_Fun();
-int Unreturned_Fun();
-
-
-
-

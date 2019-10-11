@@ -1,0 +1,10 @@
+const int a = 5;
+char b;
+int c(){
+	printf("123");
+	return (1);
+}
+void mian(){
+	c();
+}
+todo var_declara
