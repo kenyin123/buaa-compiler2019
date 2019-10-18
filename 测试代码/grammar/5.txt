@@ -1,0 +1,126 @@
+1	CONSTTK const	1	const int _begini = 0, _endi = +18, testfg = -6;
+2	INTTK int	2	const char lowera = 'a', lowerz = 'z', capitalZ = 'Z', char2 = '2', minusSy = '-';
+3	IDENFR _begini	3	
+4	ASSIGN =	4	int fibicnum[20], random_name1, random_name2;
+5	INTCON 0	5	char alphaBet[26];
+6	<无符号整数>	6	
+7	<整数>	7	void init(){
+8	COMMA ,	8	    int i;
+9	IDENFR _endi	9	    printf("---- ---- ---- test for (0->17)");
+10	ASSIGN =	10	    for(i = 0; i < _endi; i = i + 1){
+11	PLUS +	11	        fibicnum[i] = 1;
+12	INTCON 18	12	        if( i - (+i/3)*3 == 0)
+13	<无符号整数>	13	            printf("i = ", i);
+14	<整数>	14	    }
+15	COMMA ,	15	    printf("end i = ", i);
+16	IDENFR testfg	16	    printf("---- ---- ---- test for (15->-5)");
+17	ASSIGN =	17	    for(i = 15; i >= -5; i = i - 1){
+18	MINU -	18	        printf("i = ", i);
+19	INTCON 6	19	    }
+20	<无符号整数>	20	    printf("end i = ", i);
+21	<整数>	21	    return;
+22	<常量定义>	22	}
+23	SEMICN ;	23	
+24	CONSTTK const	24	int fibic(int a){
+25	CHARTK char	25	    const int return1 = 1;
+26	IDENFR lowera	26	    if(a > return1){
+27	ASSIGN =	27	        if(a-2 > 1)
+28	CHARCON a	28	            if(fibicnum[a-2] <= 1){
+29	COMMA ,	29	                fibicnum[a-2] = fibic(a-2);
+30	IDENFR lowerz	30	                printf("fibic ", a-2);
+31	ASSIGN =	31	                printf(" = ", fibicnum[a-2]);
+32	CHARCON z	32	            }
+33	COMMA ,	33	        if(a-1 > 1)
+34	IDENFR capitalZ	34	            if(fibicnum[a-1] <= 1){
+35	ASSIGN =	35	                fibicnum[a-1] = fibic(a-1);
+36	CHARCON Z	36	                printf("fibic ", a-1);
+37	COMMA ,	37	                printf(" = ", fibicnum[a-1]);
+38	IDENFR char2	38	            }
+39	ASSIGN =	39	        fibicnum[a] = fibicnum[a-1] + fibicnum[a-2];
+40	CHARCON 2	40	        return (fibicnum[a]);
+41	COMMA ,	41	    }
+42	IDENFR minusSy	42	    else{
+43	ASSIGN =	43	        return (1);
+44	CHARCON -	44	    }
+45	<常量定义>	45	}
+46	SEMICN ;	46	
+47	<常量说明>	47	int abs(int kk){
+48	INTTK int	48	    if(kk < 0){
+49	IDENFR fibicnum	49	        return (-kk);
+50	LBRACK [	50	    }
+51	INTCON 20	51	    return (kk);
+52	<无符号整数>	52	}
+53	RBRACK ]	53	
+54	COMMA ,	54	char plus(){
+55	IDENFR random_name1	55	    char plussy;
+56	COMMA ,	56	    plussy = '+';
+57	IDENFR random_name2	57	    return (plussy);
+58	<变量定义>	58	}
+59	SEMICN ;	59	
+60	CHARTK char	60	int sum4(int a, int b, int c, int d){
+61	IDENFR alphaBet	61	    int sum;
+62	LBRACK [	62	    sum = a + b + c + d;
+63	INTCON 26	63	    printf("---------------");
+64	<无符号整数>	64	    printf("a = ", a);
+65	RBRACK ]	65	    printf("b = ", b);
+66	<变量定义>	66	    printf("c = ", c);
+67	SEMICN ;	67	    printf("d = ", d);
+68	<变量说明>	68	    printf("sum = ", sum);
+69	VOIDTK void	69	    printf("---------------");
+70	IDENFR init	70	    return (sum);
+71	LPARENT (	71	}
+72	<参数表>	72	
+73	RPARENT )	73	void main() {
+74	LBRACE {	74	    const int maxFibic = 13;
+75	INTTK int	75	    const char chartimes = '*';
+76	IDENFR i	76	    int cal;
+77	<变量定义>	77	    char outch, underline;
+78	SEMICN ;	78	    int toPrinti;
+79	<变量说明>	79	    printf("---- ---- ---- test scanf(intput int)");
+80	PRINTFTK printf	80	    scanf(toPrinti);
+81	LPARENT (	81	    printf(toPrinti);
+82	STRCON ---- ---- ---- test for (0->17)	82	    printf("---- ---- ---- test scanf(intput int char)");
+83	<字符串>	83	    scanf(cal, outch);
+84	RPARENT )	84	    printf("\n");
+85	<写语句>	85	    if(cal){
+86	SEMICN ;	86	        printf("input cal != 0, cal = ", cal);
+87	<语句>	87	        cal = abs(cal);
+88	FORTK for	88	    }
+89	LPARENT (	89	    if(cal >= maxFibic + 1){
+90	IDENFR i	90	        printf("cal value should <= ", maxFibic);
+91	ASSIGN =	91	        cal = maxFibic;
+92	INTCON 0	92	    }
+93	<无符号整数>	93	    init();
+94	<整数>	94	    printf("---- ---- ---- test call func");
+95	<因子>	95	    printf("fibic val = ",fibic(cal));
+96	<项>	96	    printf("abs(-7) = ", abs(-7));
+97	<表达式>	97	    printf("---- ---- ---- test while (0 -> 6)");
+98	SEMICN ;	98	    cal = 0;
+99	IDENFR i	99	    while(cal < 7){
+100	<因子>	100	        printf("cal = ", cal);
+101	<项>	101	        cal = cal + 1;
+102	<表达式>	102	    }
+103	LSS <	103	    printf("---- ---- ---- test do while (-17->3)");
+104	IDENFR _endi	104	    cal = -17;
+105	<因子>	105	    do{
+106	<项>	106	        printf("cal = ", cal);
+107	<表达式>	107	        cal = cal + 1;
+108	<条件>	108	    }while(cal < 4);
+109	SEMICN ;	109	    printf("---- ---- ---- test char val");
+110	IDENFR i	110	    underline = '_';
+111	ASSIGN =	111	    printf("+-*/_");
+112	IDENFR i	112	    printf(plus());
+113	PLUS +	113	    printf(minusSy);
+114	INTCON 1	114	    printf(chartimes);
+115	<无符号整数>	115	    printf('/');
+116	<步长>	116	    printf(underline);
+117	RPARENT )	117	    printf(outch);
+118	LBRACE {	118	    printf("---- ---- ---- test func call");
+119	IDENFR fibicnum	119	    printf("(expect 91)sum4=", sum4(1, sum4(2, sum4(3, 4, 5, 6), 7, 8), 9, sum4(10, 11, 12, 13)));
+120	LBRACK [	120	    if(sum4(1, 2, 3, 4)!=10){
+121	IDENFR i	121	        printf("1 + 2 + 3 + 4 != 10");
+122	<因子>	122	    }
+123	<项>	123	    else{
+124	<表达式>	124	        printf("1 + 2 + 3 + 4 == 10");
+125	RBRACK ]	125	    }
+126	ASSIGN =	126	}

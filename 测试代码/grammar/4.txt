@@ -1,0 +1,111 @@
+1	CONSTTK const	1	const int _begini = 0, _endi = +18, testfg = -6;
+2	INTTK int	2	const char lowera = 'a', lowerz = 'z', capitalZ = 'Z', char2 = '2', minusSy = '-';
+3	IDENFR _begini	3	
+4	ASSIGN =	4	int random_name1, random_name2;
+5	INTCON 0	5	
+6	<无符号整数>	6	void init(){
+7	<整数>	7	    int i;
+8	COMMA ,	8	    printf("---- ---- ---- test for (0->17)");
+9	IDENFR _endi	9	    for(i = 0; i < _endi; i = i + 1){
+10	ASSIGN =	10	        if( i - (+i/3)*3 == 0)
+11	PLUS +	11	            printf("i = ", i);
+12	INTCON 18	12	    }
+13	<无符号整数>	13	    printf("end i = ", i);
+14	<整数>	14	    printf("---- ---- ---- test for (15->-5)");
+15	COMMA ,	15	    for(i = 15; i >= -5; i = i - 1){
+16	IDENFR testfg	16	        printf("i = ", i);
+17	ASSIGN =	17	    }
+18	MINU -	18	    printf("end i = ", i);
+19	INTCON 6	19	    return;
+20	<无符号整数>	20	}
+21	<整数>	21	
+22	<常量定义>	22	int fibic(int a){
+23	SEMICN ;	23	    const int return1 = 2;
+24	CONSTTK const	24	    if(a > return1){
+25	CHARTK char	25	        return (fibic(a-1) + fibic(a-2));
+26	IDENFR lowera	26	    }
+27	ASSIGN =	27	    else{
+28	CHARCON a	28	        return (1);
+29	COMMA ,	29	    }
+30	IDENFR lowerz	30	}
+31	ASSIGN =	31	
+32	CHARCON z	32	int abs(int kk){
+33	COMMA ,	33	    if(kk < 0){
+34	IDENFR capitalZ	34	        return (-kk);
+35	ASSIGN =	35	    }
+36	CHARCON Z	36	    return (kk);
+37	COMMA ,	37	}
+38	IDENFR char2	38	
+39	ASSIGN =	39	char plus(){
+40	CHARCON 2	40	    char plussy;
+41	COMMA ,	41	    plussy = '+';
+42	IDENFR minusSy	42	    return (plussy);
+43	ASSIGN =	43	}
+44	CHARCON -	44	
+45	<常量定义>	45	int sum4(int a, int b, int c, int d){
+46	SEMICN ;	46	    int sum;
+47	<常量说明>	47	    sum = a + b + c + d;
+48	INTTK int	48	    printf("---------------");
+49	IDENFR random_name1	49	    printf("a = ", a);
+50	COMMA ,	50	    printf("b = ", b);
+51	IDENFR random_name2	51	    printf("c = ", c);
+52	<变量定义>	52	    printf("d = ", d);
+53	SEMICN ;	53	    printf("sum = ", sum);
+54	<变量说明>	54	    printf("---------------");
+55	VOIDTK void	55	    return (sum);
+56	IDENFR init	56	}
+57	LPARENT (	57	
+58	<参数表>	58	void main() {
+59	RPARENT )	59	    const int maxFibic = 13;
+60	LBRACE {	60	    const char chartimes = '*';
+61	INTTK int	61	    int cal;
+62	IDENFR i	62	    char outch, underline;
+63	<变量定义>	63	    int toPrinti;
+64	SEMICN ;	64	    printf("---- ---- ---- test scanf(intput int)");
+65	<变量说明>	65	    scanf(toPrinti);
+66	PRINTFTK printf	66	    printf(toPrinti);
+67	LPARENT (	67	    printf("---- ---- ---- test scanf(intput int char)");
+68	STRCON ---- ---- ---- test for (0->17)	68	    scanf(cal, outch);
+69	<字符串>	69	    printf("\n");
+70	RPARENT )	70	    if(cal){
+71	<写语句>	71	        printf("input cal != 0, cal = ", cal);
+72	SEMICN ;	72	        cal = abs(cal);
+73	<语句>	73	    }
+74	FORTK for	74	    if(cal >= maxFibic + 1){
+75	LPARENT (	75	        printf("cal value should <= ", maxFibic);
+76	IDENFR i	76	        cal = maxFibic;
+77	ASSIGN =	77	    }
+78	INTCON 0	78	    init();
+79	<无符号整数>	79	    printf("---- ---- ---- test call func");
+80	<整数>	80	    printf("fibic val = ",fibic(cal));
+81	<因子>	81	    printf("abs(-7) = ", abs(-7));
+82	<项>	82	    printf("---- ---- ---- test while (0 -> 6)");
+83	<表达式>	83	    cal = 0;
+84	SEMICN ;	84	    while(cal < 7){
+85	IDENFR i	85	        printf("cal = ", cal);
+86	<因子>	86	        cal = cal + 1;
+87	<项>	87	    }
+88	<表达式>	88	    printf("---- ---- ---- test do while (-17->3)");
+89	LSS <	89	    cal = -17;
+90	IDENFR _endi	90	    do{
+91	<因子>	91	        printf("cal = ", cal);
+92	<项>	92	        cal = cal + 1;
+93	<表达式>	93	    }while(cal < 4);
+94	<条件>	94	    printf("---- ---- ---- test char val");
+95	SEMICN ;	95	    underline = '_';
+96	IDENFR i	96	    printf("+-*/_");
+97	ASSIGN =	97	    printf(plus());
+98	IDENFR i	98	    printf(minusSy);
+99	PLUS +	99	    printf(chartimes);
+100	INTCON 1	100	    printf('/');
+101	<无符号整数>	101	    printf(underline);
+102	<步长>	102	    printf(outch);
+103	RPARENT )	103	    printf("---- ---- ---- test func call");
+104	LBRACE {	104	    printf("(expect 91)sum4=", sum4(1, sum4(2, sum4(3, 4, 5, 6), 7, 8), 9, sum4(10, 11, 12, 13)));
+105	IFTK if	105	    if(sum4(1, 2, 3, 4)!=10){
+106	LPARENT (	106	        printf("1 + 2 + 3 + 4 != 10");
+107	IDENFR i	107	    }
+108	<因子>	108	    else{
+109	<项>	109	        printf("1 + 2 + 3 + 4 == 10");
+110	MINU -	110	    }
+111	LPARENT (	111	}
