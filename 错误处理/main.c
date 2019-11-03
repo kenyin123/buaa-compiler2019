@@ -508,7 +508,7 @@ void paramHandler() {
 			}
 			else if (symbol != RPARENT)error(12);
 		}
-		else error(0);
+		else error(12);
 	}
 	fprintf(grammar_out, "<参数表>\n");
 	printf("<参数表>\n");

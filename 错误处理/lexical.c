@@ -121,6 +121,12 @@ int getsym(int flag)
 	ch = fgetc(fp_in);
 	symbol = UNKNOWN;
 	clear();
+	if (error_klwn) {
+		error_klwn = 0;
+		symbol = symbol_error_klwn;
+		symbol_error_klwn = UNKNOWN;
+		return 0;
+	}
 	while (isspace(ch)) {
 		if (isNewline(ch)) {
 			num_line++;

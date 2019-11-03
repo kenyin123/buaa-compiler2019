@@ -3,6 +3,9 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
+
+enum SYMBOL symbol_error_klwn = UNKNOWN;
+int error_klwn = 0;
 /*
 0:int
 1:char
@@ -51,7 +54,16 @@ void skip() {
 }
 
 void error(int i) {
-	if (i == 11) {
+	if (i >=11 && i<=14 ) {
+		error_klwn = 1;
+		symbol_error_klwn = symbol;
+		switch (i) {
+		case 11:symbol = SEMICN; break;
+		case 12:symbol = RPARENT; break;
+		case 13:symbol = RBRACK; break;
+		case 14:symbol = WHILETK; break;
+		}
+		
 		printf("error %s line %d\n", errormsg[i], num_line_temp);
 		fprintf(error_out, "%d %c\n", num_line_temp, errorsym[i]);
 	}
