@@ -520,7 +520,7 @@ void paramHandler() {
 起始状态：预读了第一个字符
 结束状态：预读下一个字符并不输出
 */
-void statementHandler() {
+int statementHandler() {
 	char token_temp[idlen];
 	if (symbol == LBRACE) {
 		getsym(0);
@@ -565,13 +565,19 @@ void statementHandler() {
 			else error(11);
 		}
 	}
-	else error(0);//？这里错误类型可能是11
+	else {
+		 error(0);
+		 return 1;
+	}
 	fprintf(grammar_out, "<语句>\n");
 	printf("<语句>\n");
+	return 0;
 }
 void statement_list() {
 	while (symbol != RBRACE) {
-		statementHandler();
+		if (statementHandler()) {
+			break;
+		}
 		if (symbol != RBRACE)print_symbol(symbol);
 	}
 	fprintf(grammar_out, "<语句列>\n");

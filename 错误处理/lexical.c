@@ -3,7 +3,8 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
-int num_line_temp = 0;
+int num_line_temp = 0;//存储读；之前的行号
+char ch_temp;//存储出错时候的ch
 
 void clear() {
 	int i = 0;
@@ -117,6 +118,9 @@ int transNum(char a[]) {
 
 int getsym(int flag)
 {
+	//为了处理error(1)
+	char ch_temp = '\0';
+	//为了处理error(11 12 13 14)
 	if (error_klmn) {
 		clear();
 		error_klmn = 0;
@@ -124,11 +128,17 @@ int getsym(int flag)
 		symbol_error_klmn = UNKNOWN;
 		return 0;
 	}
+	if (error_a) {
+		clear();
+		error_a = 0;
+		ch = ch_temp;
+	}
+	else {
+		ch = fgetc(fp_in);
+	}
 	num_line_temp = num_line;
-	ch = fgetc(fp_in);
 	symbol = UNKNOWN;
 	clear();
-	
 	while (isspace(ch)) {
 		if (isNewline(ch)) {
 			num_line++;
@@ -155,6 +165,9 @@ int getsym(int flag)
 			ch = fgetc(fp_in);
 			if (isDigit(ch)) {
 				error(1);
+				while (isDigit(ch)) {
+					ch = fgetc(fp_in);
+				}
 			}
 			retract(ch);
 			int_get = 0;
@@ -216,6 +229,9 @@ int getsym(int flag)
 			ch = fgetc(fp_in);
 		}
 		if (ch != '\"') {
+			ch_temp = ch;
+			error_a = 1;
+			ch = '\"';
 			error(1);
 			return 0;
 		}
@@ -225,23 +241,39 @@ int getsym(int flag)
 		ch = fgetc(fp_in);
 		if (isDigit(ch) || isLetter(ch) || (ch == '*') || (ch == '/') || (ch == '+') || (ch == '-'))symbol = CHARCON;
 		else {
+			symbol = CHARCON;
+			//不管这个，继续读下去
 			error(1);
-			return 0;
 		} 
 		catToken(ch);
 		ch = fgetc(fp_in);
-		if (ch != '\'')error(1);
+		if (ch != '\'') {
+			ch_temp = ch;
+			error_a = 1;
+			ch = '\'';
+			error(1);
+			return 0;
+		}
 	}
 	else if (isExclamation(ch)) {
 		ch = fgetc(fp_in);
 		if (isAssign(ch)) {
 			symbol = NEQ;
 		}
+		else {
+			symbol = NEQ;
+			ch_temp = ch;
+			error_a = 1;
+			ch = '=';
+			error(1);
+			return 0;
+		}
 	}
 	else if (ch == EOF) {
 		symbol = UNKNOWN;
 	}
 	else {
+		//很难处理
 		error(1);
 		return 0;
 	}

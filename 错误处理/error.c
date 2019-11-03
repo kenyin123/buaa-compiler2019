@@ -5,6 +5,7 @@
 #include"global.h"
 enum SYMBOL symbol_error_klmn = UNKNOWN;
 int error_klmn = 0;
+int error_a = 0;
 /*
 0:int
 1:char
@@ -70,8 +71,15 @@ void error(int i) {
 			symbol = WHILETK; 
 			break;
 		}
-		printf("error %s line %d\n", errormsg[i], num_line_temp);
-		fprintf(error_out, "%d %c\n", num_line_temp, errorsym[i]);
+		if (i != 14) {
+			printf("error %s line %d\n", errormsg[i], num_line_temp);
+			fprintf(error_out, "%d %c\n", num_line_temp, errorsym[i]);
+		}
+		else {
+			printf("error %s line %d\n", errormsg[i], num_line);
+			fprintf(error_out, "%d %c\n", num_line, errorsym[i]);
+		}
+		
 	}
 	else {
 		printf("error %s line %d\n", errormsg[i], num_line);

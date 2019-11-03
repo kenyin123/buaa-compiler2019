@@ -120,7 +120,7 @@ int Factor();
 int Term();
 int Expression();
 void paramHandler();
-void statementHandler();
+int statementHandler();
 void statement_list();
 void complex_statement(int field_flag);
 void condition();
@@ -202,10 +202,10 @@ g 7    //无返回值的函数存在不匹配的return语句
 h 8    //有返回值的函数缺少return语句或存在不匹配的return语句×还有一个地方，递归
 i 9    //数组元素的下标只能是整型表达式 因子和赋值语句
 j 10    //不能改变常量的值
-k 11    //应为分号×报错行号有问题,存疑，如果要修改就设一个全局变量temp_line，在getsym开始时候更新。
-l 12    //应为)
-m 13    //应为]
-n 14    //do-while语句缺少while
+k 11    //应为分号√
+l 12    //应为)√
+m 13    //应为]√
+n 14    //do-while语句缺少while√
 o 15    //常量定义中 = 后面只能是整型或字符型常量× 全局错误的话会报异常
 */
 void error(int i);
@@ -220,5 +220,7 @@ extern char return_array[return_array_len];
 
 void return_judge(enum SYMBOL sym);
 extern int num_line_temp;
-extern enum SYMBOL symbol_error_klmn;
 extern int error_klmn;
+extern enum SYMBOL symbol_error_klmn;
+extern int error_a;
+extern char ch_temp;
