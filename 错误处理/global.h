@@ -1,5 +1,5 @@
 ﻿#pragma once
-#define idlen 128//接收标识符的有效长度
+#define idlen 1024//接收标识符的有效长度
 #define tab_size 1024//符号表最大长度
 #define token_len 1024//token数组最大长度
 
@@ -16,6 +16,7 @@
 #define int_para 9
 #define char_para 10
 
+#define return_array_len 1024
 
 #include<stdio.h>
 #include<string.h>
@@ -31,7 +32,8 @@ extern int num_line;//代码行数
 extern char token[token_len];//截取的一段，字符串或者数字等
 extern int int_get;//int类型数字
 extern int num_func;//函数个数
-extern char ident[token_len];//暂时存储函数名字，用于函数调用
+//extern char ident[token_len];//暂时存储函数名字，用于函数调用
+extern int expr_is_char;//判断表达式是不是单个字符
 
 extern char pro[13][20];
 
@@ -118,7 +120,6 @@ int Factor();
 int Term();
 int Expression();
 void paramHandler();
-void value_param_list();
 void statementHandler();
 void statement_list();
 void complex_statement(int field_flag);
@@ -128,8 +129,9 @@ void while_Handler();
 void do_while_Handler();
 int step_length();
 void for_Handler();
-void call_fun_Handler();
-void assign_Handler();
+void value_param_list(int j);
+void call_fun_Handler(char* token_temp);
+void assign_Handler(char* token_temp);
 void scanf_Handler();
 void printf_Handler();
 void return_Handler();
@@ -184,22 +186,23 @@ void str_cpy(char* str1, char* str2);
 void entertab(char* id, int type, int value, int addr, int lev);
 int searchtab(char* ident,int num_func);
 void printtab();
-int is_return_func(char* id);
 
+//错误处理部分
 void skip();
 /*
 注意program里面可能有其他错误
 0      //未分类错误
-a 1    //非法符号或不符合词法
+a 1    //非法符号或不符合词法√
 b 2    //名字重定义√
 c 3    //未定义的名字√
-d 4    //函数参数个数不匹配
-e 5    //函数参数类型不匹配
-f 6    //条件判断中出现不合法的类型
+d 4    //函数参数个数不匹配√
+e 5    //函数参数类型不匹配√
+f 6    //条件判断中出现不合法的类型√
 g 7    //无返回值的函数存在不匹配的return语句
 h 8    //有返回值的函数缺少return语句或存在不匹配的return语句
-i 9    //数组元素的下标只能是整型表达式
-		需要能够得到表达式返回的类型，需要判断的地方有因子和赋值语句
+		return语句主要出现于：函数定义和主函数的复合语句内
+		都是复合语句，复合语句都在这了，所以这里要统计一下return？
+i 9    //数组元素的下标只能是整型表达式√需要能够得到表达式返回的类型，需要判断的地方有因子和赋值语句
 j 10    //不能改变常量的值√
 k 11    //应为分号√
 l 12    //应为)√
@@ -208,3 +211,13 @@ n 14    //do-while语句缺少while√
 o 15    //常量定义中 = 后面只能是整型或字符型常量√
 */
 void error(int i);
+
+/*
+0:int
+1:char
+2:return;
+*/
+extern char return_array[return_array_len];
+
+
+void return_judge(enum SYMBOL sym);

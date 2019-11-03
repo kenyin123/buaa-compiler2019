@@ -143,7 +143,7 @@ int getsym(int flag)
 			symbol = INTCON;
 			ch = fgetc(fp_in);
 			if (isDigit(ch)) {
-				error(0);
+				error(1);
 			}
 			retract(ch);
 			int_get = 0;
@@ -204,16 +204,22 @@ int getsym(int flag)
 			catToken(ch);
 			ch = fgetc(fp_in);
 		}
-		if (ch != '\"') error(0);
+		if (ch != '\"') {
+			error(1);
+			return 0;
+		}
 		symbol = STRCON;
 	}
 	else if (isQuotation(ch)) {
 		ch = fgetc(fp_in);
 		if (isDigit(ch) || isLetter(ch) || (ch == '*') || (ch == '/') || (ch == '+') || (ch == '-'))symbol = CHARCON;
-		else error(0);
+		else {
+			error(1);
+			return 0;
+		} 
 		catToken(ch);
 		ch = fgetc(fp_in);
-		if (ch != '\'')error(0);
+		if (ch != '\'')error(1);
 	}
 	else if (isExclamation(ch)) {
 		ch = fgetc(fp_in);
@@ -224,7 +230,10 @@ int getsym(int flag)
 	else if (ch == EOF) {
 		symbol = UNKNOWN;
 	}
-	else error(0);
+	else {
+		error(1);
+		return 0;
+	}
 	if (flag == 0) {
 		print_symbol(symbol);
 	}

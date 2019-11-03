@@ -109,26 +109,6 @@ int searchtab(char* ident,int num_func) {
 	return -1;
 }
 
-int is_return_func(char* id) {
-	int loc;
-	int flag = 0;
-	for (loc = 0; loc < tab_loc; loc++) {
-		if (strcmp(id, tab[loc].id) == 0) {
-			flag = 1;
-			break;
-		}
-	}
-	if (flag) {
-		if (tab[loc].type == 8) {
-			return 0;
-		}
-		else if (tab[loc].type == 6 || tab[loc].type == 7) { 
-			return 1;
-		}
-		else error(0);//?
-	}
-	else error(0);
-}
 void printtab() {
 	char type[20][20] = { 
 		"const_int" ,"const_char" ,

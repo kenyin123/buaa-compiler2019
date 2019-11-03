@@ -4,6 +4,13 @@
 #include <ctype.h>
 #include"global.h"
 
+/*
+0:int
+1:char
+2:return;
+*/
+char return_array[return_array_len] = { '\0' };
+
 char errorsym[20] = "0abcdefghijklmno";
 char errormsg[20][100] = {
 "未分类错误",
@@ -28,11 +35,11 @@ char errormsg[20][100] = {
 void skip() {
 	while (ch != ';') {
 		if (ch == EOF) {
+			printf("EOF");
 			exit(0);
 		}
 		ch = getc(fp_in);
 	}
-	ch = getc(fp_in);
 }
 
 void error(int i) {
@@ -40,4 +47,38 @@ void error(int i) {
 	fprintf(error_out, "%d %c\n", num_line, errorsym[i]);
 	skip();
 	getsym(0);
+}
+void return_judge(enum SYMBOL sym) {
+	if (strlen(return_array) == 0) {
+		if (sym == INTTK || sym == CHARTK) {
+			error(8);
+		}
+	}
+	else if (sym == INTTK) {
+		for (int i = 0; i < strlen(return_array); i++) {
+			if (return_array[i] == '0')continue;
+			else if (return_array[i] == '1' || return_array[i] == '2') {
+				error(8);
+			}
+		}
+	}
+	else if (sym == CHARTK) {
+		for (int i = 0; i < strlen(return_array); i++) {
+			if (return_array[i] == '1')continue;
+			else if (return_array[i] == '0' || return_array[i] == '2') {
+				error(8);
+			}
+		}
+	}
+	else if (sym == VOIDTK) {
+		for (int i = 0; i < strlen(return_array); i++) {
+			if (return_array[i] == '0')continue;
+			else if (return_array[i] == '1' || return_array[i] == '2') {
+				error(7);
+			}
+		}
+	}
+	for (int i = 0; i < return_array_len; i++) {
+		return_array[i] = '\0';
+	}
 }

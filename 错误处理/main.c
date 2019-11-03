@@ -14,7 +14,8 @@ int num_line = 1;//代码行数
 char token[token_len];//截取的一段，字符串或者数字等
 int int_get;//int类型数字
 int num_func = 0;
-char ident[token_len];//暂时存储函数名字，用于函数调用和赋值语句
+//char ident[token_len];//暂时存储函数名字，用于函数调用和赋值语句
+int expr_is_char = 0;//判断表达式是不是单个字符
 
 char pro[13][20] = { "const","int","char","void","main","if","else","do","while","for","scanf","printf","return"
 }; //保留字表
@@ -168,8 +169,9 @@ int Const_Declaration(int field_flag) {
 开始状态：读了第一个字符并输出
 结束状态：
 return 0:正常结束到最后
-return2：函数char a(
-return3：void
+return 1:int a(
+return 2:char a(
+return 3:void
 注意：未区分char int
 char a;
 char a[2];
@@ -191,10 +193,11 @@ int Var_Declaration(int field_flag) {
 		getsym(1);
 		if (symbol == LPARENT) {
 			entertab(token_temp, (symbol_temp == INTTK)? return_int_func: return_char_func, NULL, addr, field_flag);
+			num_func++;
 			fprintf(grammar_out, "<声明头部>\n");
 			printf("<声明头部>\n");
 			print_symbol(symbol);
-			return 2;
+			return  (symbol_temp == INTTK) ? 1:2;
 		}
 		if (symbol == LBRACK) {
 			print_symbol(symbol);
@@ -257,6 +260,7 @@ int Var_Declaration(int field_flag) {
 			getsym(1);
 			if (symbol == LPARENT) {
 				entertab(token_temp, (symbol_temp == INTTK) ? return_int_func : return_char_func, NULL, addr, field_flag);
+				num_func++;
 				fprintf(grammar_out, "<变量说明>\n");
 				printf("<变量说明>\n");
 				printf_sym_str(head);
@@ -264,7 +268,7 @@ int Var_Declaration(int field_flag) {
 				fprintf(grammar_out, "<声明头部>\n");
 				printf("<声明头部>\n");
 				print_symbol(symbol);
-				return 2;//有返回函数定义
+				return  (symbol_temp == INTTK) ? 1 : 2;
 			}
 			if (symbol == LBRACK) {
 				p = enter_sym_str(p);
@@ -352,6 +356,9 @@ return 6:有返回值函数调用语句
 最麻烦的是，如果不对，那么会不会有其他可能性
 */
 int Factor() {
+	expr_is_char = 0;
+	char token_temp[idlen];//缓存当前标识符名
+	int j;//返回数组或者函数在tab表的index
 	if (Grammar_int() == 1) {
 		fprintf(grammar_out, "<因子>\n");
 		printf("<因子>\n");
@@ -361,6 +368,7 @@ int Factor() {
 	else if (symbol == LPARENT) {
 		getsym(0);
 		if (Expression() == 0)error(0);//读取了Expression()的第一个字符,结束时候读取了下一个字符
+		expr_is_char = 0;
 		print_symbol(symbol);
 		if (symbol != RPARENT)error(12);
 		fprintf(grammar_out, "<因子>\n");
@@ -369,33 +377,44 @@ int Factor() {
 		return 2;
 	}
 	else if (symbol == CHARCON) {
+		expr_is_char = 1;
 		fprintf(grammar_out, "<因子>\n");
 		printf("<因子>\n");
 		getsym(1);
 		return 3;
 	}
 	else if (symbol == IDENFR) {
-		str_cpy(token, ident);
+		str_cpy(token, token_temp);
 		getsym(1);
 		if (symbol == LBRACK) {
 			print_symbol(symbol);
 			getsym(0);
 			if (Expression() == 0)error(0);
+			if (expr_is_char == 1)error(9);
 			print_symbol(symbol);
 			if (symbol != RBRACK)error(13);
+			j = searchtab(token_temp, num_func);
+			if (tab[j].type == char_array)expr_is_char = 1;
+			else if (tab[j].type != int_array)error(0);
 			fprintf(grammar_out, "<因子>\n");
 			printf("<因子>\n");
 			getsym(1);
 			return 5;
 		}
 		else if (symbol == LPARENT) {
+			j = searchtab(token_temp, num_func);
+			if (tab[j].type == return_char_func)expr_is_char = 1;
+			else if (tab[j].type != return_int_func)error(0);
 			print_symbol(symbol);
-			call_fun_Handler();
+			call_fun_Handler(token_temp);
 			fprintf(grammar_out, "<因子>\n");
 			printf("<因子>\n");
 			return 6;
 		}
 		else {
+			j = searchtab(token_temp, num_func);
+			if (tab[j].type == const_char || tab[j].type == var_char || tab[j].type == char_para)expr_is_char = 1;
+			else if (tab[j].type != const_int && tab[j].type != var_int && tab[j].type != int_para)error(0);
 			fprintf(grammar_out, "<因子>\n");
 			printf("<因子>\n");
 			return 4;
@@ -404,11 +423,13 @@ int Factor() {
 	else return 0;
 }
 int Term() {
+	expr_is_char = 0;
 	if (Factor() == 0)return 0;
 	while ((symbol == MULT) || (symbol == DIV)) {
 		print_symbol(symbol);
 		getsym(0);
 		if (Factor() == 0)error(0);
+		expr_is_char = 0;
 	}
 	fprintf(grammar_out, "<项>\n");
 	printf("<项>\n");
@@ -418,7 +439,10 @@ int Term() {
 结尾symbol没有打印
 */
 int Expression() {
+	expr_is_char = 0;
+	//int first_is_plus_minus = 0;
 	if ((symbol == PLUS) || (symbol == MINU)) {
+		//first_is_plus_minus = 1;
 		getsym(0);
 		if (Term()) {
 			while ((symbol == PLUS) || (symbol == MINU)) {
@@ -428,16 +452,25 @@ int Expression() {
 			}
 			fprintf(grammar_out, "<表达式>\n");
 			printf("<表达式>\n");
+			expr_is_char = 0;
 			return 1;
 		}
 		else error(0);
 	}
 	else if (Term()) {
+		if (symbol != PLUS && symbol != MINU) {
+			if (expr_is_char == 1) {
+				fprintf(grammar_out, "<表达式>\n");
+				printf("<表达式>\n");
+				return 1;
+			}
+		}
 		while ((symbol == PLUS) || (symbol == MINU)) {
 			print_symbol(symbol);
 			getsym(0);
 			if (Term() == 0)error(0);
 		}
+		expr_is_char = 0;
 		fprintf(grammar_out, "<表达式>\n");
 		printf("<表达式>\n");
 		return 1;
@@ -488,6 +521,7 @@ void paramHandler() {
 结束状态：预读下一个字符并不输出
 */
 void statementHandler() {
+	char token_temp[idlen];
 	if (symbol == LBRACE) {
 		getsym(0);
 		statement_list();
@@ -517,16 +551,16 @@ void statementHandler() {
 		getsym(1);
 	}
 	else if (symbol == IDENFR) {
-		str_cpy(token, ident);
+		str_cpy(token, token_temp);
 		getsym(0);
 		if (symbol == LPARENT) {
-			call_fun_Handler();
+			call_fun_Handler(token_temp);
 			print_symbol(symbol);
 			if (symbol == SEMICN) getsym(1);
 			else error(11);
 		}
 		else {
-			assign_Handler();
+			assign_Handler(token_temp);
 			if (symbol == SEMICN) getsym(1);
 			else error(11);
 		}
@@ -568,10 +602,12 @@ void complex_statement(int field_flag) {
 */
 void condition() {
 	if (Expression() == 0)error(0);
+	if (expr_is_char == 1)error(9);
 	if (isRelation(symbol)) {
 		print_symbol(symbol);
 		getsym(0);
 		if (Expression() == 0)error(0);
+		if (expr_is_char == 1)error(9);
 	}
 	fprintf(grammar_out, "<条件>\n");
 	printf("<条件>\n");
@@ -675,7 +711,8 @@ void for_Handler() {
 开始状态：预读第一位并没有输出
 结束状态：预读下一位)并输出
 */
-void value_param_list() {
+void value_param_list(int j) {
+	j++;
 	if (symbol == RPARENT) {
 		fprintf(grammar_out, "<值参数表>\n");
 		printf("<值参数表>\n");
@@ -684,11 +721,24 @@ void value_param_list() {
 	}
 	print_symbol(symbol);
 	if (Expression()) {
+		if (expr_is_char) {
+			if (tab[j++].type != char_para)error(5);
+		}
+		else {
+			if (tab[j++].type != int_para)error(5);
+		}
 		while (symbol == COMMA) {
 			print_symbol(symbol);
 			getsym(0);
 			Expression();
+			if (expr_is_char) {
+				if (tab[j++].type != char_para)error(5);
+			}
+			else {
+  				if (tab[j++].type != int_para)error(5);
+			}
 		}
+		if (tab[j].type == char_para || tab[j].type == int_para)error(4);
 		if (symbol != RPARENT)error(12);
 		fprintf(grammar_out, "<值参数表>\n");
 		printf("<值参数表>\n");
@@ -701,23 +751,24 @@ void value_param_list() {
 函数调用
 起始状态：(
 */
-void call_fun_Handler() {
-	char ident_save[token_len];
-	str_cpy(ident, ident_save);
+void call_fun_Handler(char* token_temp) {
+	int j = searchtab(token_temp, num_func);
+	int j_temp = j;
 	getsym(1); 
-	value_param_list();
-	if (is_return_func(ident_save)) {
+	value_param_list(j_temp);
+	if (tab[j].type == 6 || tab[j].type == 7) {
 		fprintf(grammar_out, "<有返回值函数调用语句>\n");
 		printf("<有返回值函数调用语句>\n");
 	}
-	else {
+	else if (tab[j].type == 8) {
 		fprintf(grammar_out, "<无返回值函数调用语句>\n");
 		printf("<无返回值函数调用语句>\n");
 	}
+	else error(0);
 	getsym(1);
 }
-void assign_Handler() {
-	int tab_temp = searchtab(ident, num_func);
+void assign_Handler(char* token_temp) {
+	int tab_temp = searchtab(token_temp, num_func);
 	if (tab_temp == -1)error(0);
 	if (tab[tab_temp].type == 0 || tab[tab_temp].type == 1) {
 		error(10);
@@ -732,6 +783,7 @@ void assign_Handler() {
 	else if (symbol == LBRACK) {
 		getsym(0);
 		if (Expression() == 0)error(0);
+		if (expr_is_char == 1)error(9);
 		print_symbol(symbol);
 		if (symbol != RBRACK)error(13);
 		getsym(0);
@@ -796,6 +848,7 @@ void return_Handler() {
 		fprintf(grammar_out, "<返回语句>\n");
 		printf("<返回语句>\n");
 		print_symbol(symbol);
+		return_array[strlen(return_array)] = '2';
 		return;
 	}
 	else if (symbol == LPARENT) {
@@ -808,6 +861,7 @@ void return_Handler() {
 		fprintf(grammar_out, "<返回语句>\n");
 		printf("<返回语句>\n");
 		print_symbol(symbol);
+		return_array[strlen(return_array)] = (expr_is_char == 1)?'1':'0';
 	}
 	else error(0);
 }
@@ -816,6 +870,7 @@ void returned_func_definition() {
 	getsym(0);
 	if (symbol != IDENFR)error(0);
 	entertab(token,(sym_temp == INTTK) ? return_int_func : return_char_func,NULL, addr, 0);
+	num_func++;
 	fprintf(grammar_out, "<声明头部>\n");
 	printf("<声明头部>\n");
 	getsym(0);
@@ -824,31 +879,35 @@ void returned_func_definition() {
 	if (symbol != LBRACE)error(0);
 	getsym(1);
 	complex_statement(1);
+	//判断return语句
+	return_judge(sym_temp);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<有返回值函数定义>\n");
 	printf("<有返回值函数定义>\n");
 	getsym(0);
-	num_func++;
 }
 int unreturn_func_definition() {
 	getsym(0);
 	if (symbol == MAINTK)return 1;
 	if (symbol != IDENFR)error(0);
 	entertab(token, void_func, NULL, addr, 0);
+	num_func++;
 	getsym(0);
 	if (symbol != LPARENT)error(0);
 	paramHandler();
 	if (symbol != LBRACE)error(0);
 	getsym(1);
 	complex_statement(1);
+	return_judge(VOIDTK);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<无返回值函数定义>\n");
 	printf("<无返回值函数定义>\n");
 	getsym(0);
-	num_func++;
 	return 0;
 }
 void mainfunc() {
+	entertab(token, void_func, NULL, addr, 0);
+	num_func++;
 	getsym(0);
 	if (symbol != LPARENT)error(0);
 	getsym(0);
@@ -857,6 +916,7 @@ void mainfunc() {
 	if (symbol != LBRACE)error(0);
 	getsym(1);
 	complex_statement(0);
+	return_judge(VOIDTK);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<主函数>\n");
 	printf("<主函数>\n");
@@ -869,11 +929,12 @@ void program() {
 	}
 	if (symbol == INTTK || symbol == CHARTK) {
 		int temp = Var_Declaration(0);
-		if (temp == 2) {
+		if (temp == 1||2) {
 			paramHandler();
 			if (symbol != LBRACE)error(0);
 			getsym(1);
 			complex_statement(1);
+			return_judge((temp == 1)?INTTK:CHARTK);
 			if (symbol != RBRACE)error(0);
 			fprintf(grammar_out, "<有返回值函数定义>\n");
 			printf("<有返回值函数定义>\n");
