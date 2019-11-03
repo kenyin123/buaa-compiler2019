@@ -932,7 +932,7 @@ void program() {
 	}
 	if (symbol == INTTK || symbol == CHARTK) {
 		int temp = Var_Declaration(0);
-		if (temp == 1||2) {
+		if (temp == 1||temp == 2) {
 			paramHandler();
 			if (symbol != LBRACE)error(0);
 			getsym(1);
