@@ -602,12 +602,12 @@ void complex_statement(int field_flag) {
 */
 void condition() {
 	if (Expression() == 0)error(0);
-	if (expr_is_char == 1)error(9);
+	if (expr_is_char == 1)error(6);
 	if (isRelation(symbol)) {
 		print_symbol(symbol);
 		getsym(0);
 		if (Expression() == 0)error(0);
-		if (expr_is_char == 1)error(9);
+		if (expr_is_char == 1)error(6);
 	}
 	fprintf(grammar_out, "<条件>\n");
 	printf("<条件>\n");
@@ -744,7 +744,7 @@ void value_param_list(int j) {
 		printf("<值参数表>\n");
 		print_symbol(symbol);
 	}
-	else error(0);
+	else error(5);
 }
 
 /*
@@ -800,6 +800,7 @@ void scanf_Handler() {
 	getsym(0);
 	if (symbol != LPARENT)error(0);
 	getsym(0);
+	if (symbol == RPARENT)error(0);//缺少参数
 	if (symbol != IDENFR)error(0);
 	getsym(0);
 	while (symbol == COMMA) {
@@ -817,6 +818,7 @@ void printf_Handler() {
 	getsym(0);
 	if (symbol != LPARENT)error(0);
 	getsym(0);
+	if (symbol == RPARENT)error(0);//缺少参数
 	if (symbol == STRCON) {
 		fprintf(grammar_out, "<字符串>\n");
 		printf("<字符串>\n");
@@ -854,6 +856,7 @@ void return_Handler() {
 	else if (symbol == LPARENT) {
 		print_symbol(symbol);
 		getsym(0);
+		if (symbol == RPARENT)error(0);//缺少参数
 		if (Expression() == 0)error(0);
 		print_symbol(symbol);
 		if (symbol != RPARENT)error(12);

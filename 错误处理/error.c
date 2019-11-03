@@ -33,7 +33,16 @@ char errormsg[20][100] = {
 
 
 void skip() {
+	/*
 	while (ch != ';') {
+		if (ch == EOF) {
+			printf("EOF");
+			exit(0);
+		}
+		ch = getc(fp_in);
+	}
+	*/
+	while (!isspace(ch)) {
 		if (ch == EOF) {
 			printf("EOF");
 			exit(0);
@@ -45,8 +54,8 @@ void skip() {
 void error(int i) {
 	printf("error %s line %d\n", errormsg[i],num_line);
 	fprintf(error_out, "%d %c\n", num_line, errorsym[i]);
-	skip();
-	getsym(0);
+	//skip();
+	//getsym(0);
 }
 void return_judge(enum SYMBOL sym) {
 	if (strlen(return_array) == 0) {
@@ -72,8 +81,8 @@ void return_judge(enum SYMBOL sym) {
 	}
 	else if (sym == VOIDTK) {
 		for (int i = 0; i < strlen(return_array); i++) {
-			if (return_array[i] == '0')continue;
-			else if (return_array[i] == '1' || return_array[i] == '2') {
+			if (return_array[i] == '2')continue;
+			else if (return_array[i] == '0' || return_array[i] == '1') {
 				error(7);
 			}
 		}
