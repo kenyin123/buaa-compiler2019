@@ -3,7 +3,6 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
-
 /*
 0:int
 1:char
@@ -52,8 +51,14 @@ void skip() {
 }
 
 void error(int i) {
-	printf("error %s line %d\n", errormsg[i],num_line);
-	fprintf(error_out, "%d %c\n", num_line, errorsym[i]);
+	if (i == 11) {
+		printf("error %s line %d\n", errormsg[i], num_line_temp);
+		fprintf(error_out, "%d %c\n", num_line_temp, errorsym[i]);
+	}
+	else {
+		printf("error %s line %d\n", errormsg[i], num_line);
+		fprintf(error_out, "%d %c\n", num_line, errorsym[i]);
+	}
 	//skip();
 	//getsym(0);
 }

@@ -3,6 +3,8 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
+int num_line_temp = 0;
+
 void clear() {
 	int i = 0;
 	for (i = 0; i < sizeof(token); i++) {
@@ -115,6 +117,7 @@ int transNum(char a[]) {
 
 int getsym(int flag)
 {
+	num_line_temp = num_line;
 	ch = fgetc(fp_in);
 	symbol = UNKNOWN;
 	clear();
