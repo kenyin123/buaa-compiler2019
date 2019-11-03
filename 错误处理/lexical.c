@@ -117,16 +117,18 @@ int transNum(char a[]) {
 
 int getsym(int flag)
 {
+	if (error_klmn) {
+		clear();
+		error_klmn = 0;
+		symbol = symbol_error_klmn;
+		symbol_error_klmn = UNKNOWN;
+		return 0;
+	}
 	num_line_temp = num_line;
 	ch = fgetc(fp_in);
 	symbol = UNKNOWN;
 	clear();
-	if (error_klwn) {
-		error_klwn = 0;
-		symbol = symbol_error_klwn;
-		symbol_error_klwn = UNKNOWN;
-		return 0;
-	}
+	
 	while (isspace(ch)) {
 		if (isNewline(ch)) {
 			num_line++;
