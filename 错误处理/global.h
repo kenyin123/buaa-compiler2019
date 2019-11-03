@@ -220,5 +220,5 @@ extern char return_array[return_array_len];
 
 void return_judge(enum SYMBOL sym);
 extern int num_line_temp;
-extern enum SYMBOL symbol_error_klwn;
-extern int error_klwn;
+extern enum SYMBOL symbol_error_klmn;
+extern int error_klmn;
