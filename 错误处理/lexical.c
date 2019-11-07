@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
-int num_line_temp = 0;//存储读；之前的行号
+int num_line_temp = 0;//存储读；之前的行号,error11
 char ch_temp;//存储出错时候的ch
 
 void clear() {

@@ -210,17 +210,21 @@ o 15    //常量定义中 = 后面只能是整型或字符型常量× 全局错�
 */
 void error(int i);
 
+
 /*
+error_gh
 0:int
 1:char
 2:return;
 */
 extern char return_array[return_array_len];
-
-
-void return_judge(enum SYMBOL sym);
+void judge_no_return(enum SYMBOL sym);
+void judge_error_return(enum SYMBOL sym, int type);
+extern enum SYMBOL symbol_error_gh;
+//error_klmn
 extern int num_line_temp;
 extern int error_klmn;
 extern enum SYMBOL symbol_error_klmn;
+//error_a
 extern int error_a;
 extern char ch_temp;

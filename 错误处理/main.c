@@ -192,6 +192,7 @@ int Var_Declaration(int field_flag) {
 		str_cpy(token, token_temp);
 		getsym(1);
 		if (symbol == LPARENT) {
+			symbol_error_gh = symbol_temp;
 			entertab(token_temp, (symbol_temp == INTTK)? return_int_func: return_char_func, NULL, addr, field_flag);
 			num_func++;
 			fprintf(grammar_out, "<声明头部>\n");
@@ -259,6 +260,7 @@ int Var_Declaration(int field_flag) {
 			//状态：char a
 			getsym(1);
 			if (symbol == LPARENT) {
+				symbol_error_gh = symbol_temp;
 				entertab(token_temp, (symbol_temp == INTTK) ? return_int_func : return_char_func, NULL, addr, field_flag);
 				num_func++;
 				fprintf(grammar_out, "<变量说明>\n");
@@ -857,6 +859,7 @@ void return_Handler() {
 		printf("<返回语句>\n");
 		print_symbol(symbol);
 		return_array[strlen(return_array)] = '2';
+		judge_error_return(symbol_error_gh, 2);
 		return;
 	}
 	else if (symbol == LPARENT) {
@@ -871,10 +874,12 @@ void return_Handler() {
 		printf("<返回语句>\n");
 		print_symbol(symbol);
 		return_array[strlen(return_array)] = (expr_is_char == 1)?'1':'0';
+		judge_error_return(symbol_error_gh, expr_is_char);
 	}
 	else error(0);
 }
 void returned_func_definition() {
+	symbol_error_gh = symbol;
 	enum SYMBOL sym_temp = symbol;
 	getsym(0);
 	if (symbol != IDENFR)error(0);
@@ -889,13 +894,14 @@ void returned_func_definition() {
 	getsym(1);
 	complex_statement(1);
 	//判断return语句
-	return_judge(sym_temp);
+	judge_no_return(sym_temp);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<有返回值函数定义>\n");
 	printf("<有返回值函数定义>\n");
 	getsym(0);
 }
 int unreturn_func_definition() {
+	symbol_error_gh = symbol;
 	getsym(0);
 	if (symbol == MAINTK)return 1;
 	if (symbol != IDENFR)error(0);
@@ -907,7 +913,6 @@ int unreturn_func_definition() {
 	if (symbol != LBRACE)error(0);
 	getsym(1);
 	complex_statement(1);
-	return_judge(VOIDTK);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<无返回值函数定义>\n");
 	printf("<无返回值函数定义>\n");
@@ -925,7 +930,6 @@ void mainfunc() {
 	if (symbol != LBRACE)error(0);
 	getsym(1);
 	complex_statement(0);
-	return_judge(VOIDTK);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<主函数>\n");
 	printf("<主函数>\n");
@@ -943,7 +947,7 @@ void program() {
 			if (symbol != LBRACE)error(0);
 			getsym(1);
 			complex_statement(1);
-			return_judge((temp == 1)?INTTK:CHARTK);
+			judge_no_return((temp == 1)?INTTK:CHARTK);
 			if (symbol != RBRACE)error(0);
 			fprintf(grammar_out, "<有返回值函数定义>\n");
 			printf("<有返回值函数定义>\n");

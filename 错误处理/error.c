@@ -3,9 +3,10 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
-enum SYMBOL symbol_error_klmn = UNKNOWN;
-int error_klmn = 0;
-int error_a = 0;
+enum SYMBOL symbol_error_klmn = UNKNOWN;//暂存储symbol
+enum SYMBOL symbol_error_gh = UNKNOWN;//主要用在函数定义里面，判断当前函数类型
+int error_klmn = 0;//是否有error_klmn
+int error_a = 0;//是否有error_a
 /*
 0:int
 1:char
@@ -71,7 +72,8 @@ void error(int i) {
 			symbol = WHILETK; 
 			break;
 		}
-		if (i != 14) {
+		if (i == 11) {
+			//碰到分号
 			printf("error %s line %d\n", errormsg[i], num_line_temp);
 			fprintf(error_out, "%d %c\n", num_line_temp, errorsym[i]);
 		}
@@ -88,37 +90,24 @@ void error(int i) {
 	//skip();
 	//getsym(0);
 }
-void return_judge(enum SYMBOL sym) {
-	if (strlen(return_array) == 0) {
-		if (sym == INTTK || sym == CHARTK) {
-			error(8);
-		}
-	}
-	else if (sym == INTTK) {
-		for (int i = 0; i < strlen(return_array); i++) {
-			if (return_array[i] == '0')continue;
-			else if (return_array[i] == '1' || return_array[i] == '2') {
-				error(8);
-			}
-		}
-	}
-	else if (sym == CHARTK) {
-		for (int i = 0; i < strlen(return_array); i++) {
-			if (return_array[i] == '1')continue;
-			else if (return_array[i] == '0' || return_array[i] == '2') {
-				error(8);
-			}
-		}
-	}
-	else if (sym == VOIDTK) {
-		for (int i = 0; i < strlen(return_array); i++) {
-			if (return_array[i] == '2')continue;
-			else if (return_array[i] == '0' || return_array[i] == '1') {
-				error(7);
-			}
-		}
-	}
+void judge_no_return(enum SYMBOL sym) {
+	if (strlen(return_array) == 0) error(8);
 	for (int i = 0; i < return_array_len; i++) {
 		return_array[i] = '\0';
 	}
+}
+void judge_error_return(enum SYMBOL sym, int type) {
+	if (sym == INTTK) {
+		if (type == 0)return;
+		else error(8);
+	}
+	else if (sym == CHARTK) {
+		if (type == 1)return;
+		else error(8);
+	}
+	else if (sym == VOIDTK) {
+		if (type == 2)return;
+		else error(7);
+	}
+	else error(0);
 }
