@@ -146,18 +146,21 @@ void insert_midcode(int type, char* argu1, char* argu2, char* result, int value)
 	else {
 		str_cpy("", midcode[midcode_loc].argu1);
 	}
+
 	if (argu2 != NULL) {
 		str_cpy(argu2, midcode[midcode_loc].argu2);
 	}
 	else {
 		str_cpy("", midcode[midcode_loc].argu2);
 	}
+
 	if (result != NULL) {
 		str_cpy(result, midcode[midcode_loc].result);
 	}
 	else {
 		str_cpy("", midcode[midcode_loc].result);
 	}
+
 	midcode[midcode_loc].value = value;
 	midcode_loc++;
 }
@@ -243,7 +246,7 @@ void print_midcode() {
 			break;
 		}
 		case ARRAY_ASSIGN: {
-			fprintf(midcode_out, "%s[%s] = %s\n", midcode[i].result, midcode[i].argu1, midcode[i].argu2);
+			fprintf(midcode_out, "%s[%s] = %s\n", midcode[i].result, midcode[i].argu2, midcode[i].argu1);
 			break;
 		}
 		case ARRAY_ACCESS: {

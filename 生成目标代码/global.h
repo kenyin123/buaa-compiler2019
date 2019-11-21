@@ -42,9 +42,9 @@
 #define PUSH 16
 #define FUNC_RET 17
 
-#define VAR_ASSIGN 18
-#define ARRAY_ASSIGN 19
-#define ARRAY_ACCESS 20 //a = array[i]
+#define VAR_ASSIGN 18//result = argu1
+#define ARRAY_ASSIGN 19 //result[argu2] = argu1
+#define ARRAY_ACCESS 20 //result = argu1[argu2]
 
 #define LSSOP 21
 #define LEQOP 22

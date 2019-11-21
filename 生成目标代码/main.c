@@ -785,6 +785,7 @@ void for_Handler() {
 	if (symbol != LPARENT)error(0);
 	getsym(0);
 	if (symbol != IDENFR)error(0);
+	str_cpy(token, token_temp);
 	j = searchtab(token, num_func);
 	if (j == -1)error(0);
 	getsym(0);
@@ -976,7 +977,7 @@ void assign_Handler(char* token_temp) {
 			if (!expr_is_char)error(0);
 		}
 		else error(0);
-		insert_midcode(VAR_ASSIGN, midcode[midcode_loc - 1].result, index, token_temp, 1);//？
+		insert_midcode(ARRAY_ASSIGN, midcode[midcode_loc - 1].result, index, token_temp, 0);
 	}
 	else error(0);
 	fprintf(grammar_out, "<赋值语句>\n");
