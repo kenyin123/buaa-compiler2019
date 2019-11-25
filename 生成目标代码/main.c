@@ -4,11 +4,14 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
+
 FILE* fp_in;
 FILE* grammar_out;
 FILE* error_out;
 FILE* tab_out;
 FILE* midcode_out;
+FILE* mips_out;
+
 
 char ch;//最新读取到的字符
 int num_line = 1;//代码行数
@@ -977,7 +980,7 @@ void assign_Handler(char* token_temp) {
 			if (!expr_is_char)error(0);
 		}
 		else error(0);
-		insert_midcode(ARRAY_ASSIGN, midcode[midcode_loc - 1].result, index, token_temp, 0);
+		insert_midcode(ARRAY_ASSIGN, index, midcode[midcode_loc - 1].result, token_temp, 0);
 	}
 	else error(0);
 	fprintf(grammar_out, "<赋值语句>\n");
@@ -1197,13 +1200,17 @@ int main() {
 	error_out = fopen("error.txt", "w");
 	tab_out = fopen("tab.txt", "w");
 	midcode_out = fopen("midcode.txt", "w");
+	mips_out = fopen("mips.txt", "w");
 	program();
 	printtab();
 	print_midcode();
+	mips();
+
 	fclose(fp_in);
 	fclose(grammar_out);
 	fclose(error_out);
 	fclose(tab_out);
 	fclose(midcode_out);
+	fclose(mips_out);
 	return 0;
 }

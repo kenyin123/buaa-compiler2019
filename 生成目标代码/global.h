@@ -4,7 +4,7 @@
 #define tab_size 1024//符号表最大长度
 #define token_len 1024//token数组最大长度
 #define midecode_size 4096
-
+#define info_size 512
 //符号表项类型
 #define const_int 0
 #define const_char 1
@@ -81,6 +81,7 @@ extern FILE* grammar_out;
 extern FILE* error_out;
 extern FILE* tab_out;
 extern FILE* midcode_out;
+extern FILE* mips_out;
 
 extern char ch;//最新读取到的字符
 extern int num_line;//代码行数
@@ -302,3 +303,11 @@ char* id_name_gen();
 void print_midcode();
 char* label_name_gen();
 char* numtostr(int num);
+
+
+//mips目标代码
+extern int num_str;
+extern int Func_loc;
+extern int Para_loc;
+extern int Var_loc;
+extern int Var_addr;
