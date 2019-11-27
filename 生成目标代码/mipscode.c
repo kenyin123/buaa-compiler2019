@@ -46,7 +46,7 @@ int get_index(char* id, int func_num, int* addr) {
 }
 char* str_name_gen() {
 	static char str_name[idlen];
-	sprintf_s(str_name, idlen, "$str%d", num_str++);
+	sprintf(str_name, "$str%d", num_str++);
 	return str_name;
 }
 
@@ -97,18 +97,18 @@ void PLUS_Handler(int i) {
 
 	if (op1 != -1) {
 		if (op2 != -1) {
-			fprintf(mips_out, "\taddu $t0, $s%d,$s%d\n", op1, op2);
+			fprintf(mips_out, "\taddu $t0, $s%d, $s%d\n", op1, op2);
 		}
 		else {
-			fprintf(mips_out, "\taddu $t0, $s%d,$t1\n", op1);
+			fprintf(mips_out, "\taddu $t0, $s%d, $t1\n", op1);
 		}
 	}
 	else {
 		if (op2 != -1) {
-			fprintf(mips_out, "\taddu $t0, $t0,$s%d\n", op2);
+			fprintf(mips_out, "\taddu $t0, $t0, $s%d\n", op2);
 		}
 		else {
-			fprintf(mips_out, "\taddu $t0, $t0,$t1\n");
+			fprintf(mips_out, "\taddu $t0, $t0, $t1\n");
 		}
 	}
 
@@ -127,9 +127,6 @@ void PLUS_Handler(int i) {
 		fprintf(mips_out, "\tsw $t0, -%d($fp)\n", addr_temp);//?
 	}
 }
-/*
-sub,subu//?
-*/
 void MINU_Handler(int i) {
 	int addr_temp = 0;
 	int index_temp;
@@ -367,18 +364,19 @@ void Func_Handler(int i) {
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
 	if (strcmp(midcode[i].argu1, "main") == 0) {
 		fprintf(mips_out, "main:\n");
-		fprintf(mips_out, "\tmove $fp, $s\n");
-		fprintf(mips_out, "\tsub $sp, $sp, %d\n",Func_tab[Func_loc].size);
+		fprintf(mips_out, "\tmove $fp, $sp\n");
+		fprintf(mips_out, "#退栈空间\n\tsub $sp, $sp, %d\n",Func_tab[Func_loc].size);
 		//fp暂时静止，sp是动的
 	}
 	else {
 		fprintf(mips_out, "%s:\n",midcode[i].argu1);
-		fprintf(mips_out, "\tsub $sp, $sp, %d\n", Func_tab[Func_loc].size - Func_tab[Func_loc].num_para * 4);
+		fprintf(mips_out, "#为函数局部变量和临时变量退栈空间，保存s系寄存器和$ra,$fp\n");
+		fprintf(mips_out, "\tsub $sp, $sp, %d\n", Func_tab[Func_loc].size - Func_tab[Func_loc].num_para * 4 + 40);
 		for (int j = 0; j < Func_tab[Func_loc].num_var - Func_tab[Func_loc].num_para && j < 8; j++) {
-			fprintf(mips_out, "\tsw $s%d, %d($sp)\n", j, 40 - j);
+			fprintf(mips_out, "\tsw $s%d, %d($sp)\n", j, 40 - j * 4);
 		}
 		fprintf(mips_out, "\tsw $ra, 8($sp)\n\tsw $fp, 4($sp)\n");
-		fprintf(mips_out, "\tadd $fp, $sp, %d\n", Func_tab[Func_loc].size + 40);
+		fprintf(mips_out, "#fp为被调用者基地址\n\tadd $fp, $sp, %d\n", Func_tab[Func_loc].size + 40);
 	}
 }
 void Call_Handler(int i) {
@@ -423,7 +421,7 @@ void Func_Ret_Handler(int i) {
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
 	index_temp = get_index(midcode[i].result, Func_loc, &addr_temp);
 	if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
-		fprintf(mips_out, "\tmove $v0, $s%d\n\n",index_temp - ParaNum);
+		fprintf(mips_out, "\tmove $s%d, $v0\n",index_temp - ParaNum);
 	}
 	else {
 		fprintf(mips_out, "\tsw $v0, -%d($fp)\n",addr_temp);//?
@@ -572,7 +570,7 @@ void Array_Access_Handler(int i) {
 	//t0数组名
 	if (index_temp == -1) {
 		global_flag = 1;
-		fprintf(mips_out, "\tla $t0, %s\n", midcode[i].result);
+		fprintf(mips_out, "\tla $t0, %s\n", midcode[i].argu1);
 	}
 	else {
 		fprintf(mips_out, "\tla $t0, -%d($fp)\n", addr_temp);
@@ -635,6 +633,7 @@ void Condition_Hanlder(int i) {
 	int op1 = -1;
 	int op2 = -1;
 	int ParaNum = Func_tab[Func_loc].num_para;
+	int bz_flag = (midcode[i + 1].type == BZ) ? 1 : 0;
 	if (midcode[i].type == LSSOP) {
 		if (str_is_num(midcode[i].argu1)) {
 			fprintf(mips_out, "\tli $t0, %s\n", midcode[i].argu1);
@@ -672,22 +671,43 @@ void Condition_Hanlder(int i) {
 				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
 		}
-		if (op1 == -1) {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbge $t0, $t1, %s\n", midcode[i + 1].argu1);
+		if (bz_flag) {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbge $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbge $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbge $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbge $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbge $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
 		else {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbge $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tblt $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tblt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbge $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tblt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tblt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
+		
 	}
 	else if (midcode[i].type == LEQOP) {
 		if (str_is_num(midcode[i].argu1)) {
@@ -726,22 +746,43 @@ void Condition_Hanlder(int i) {
 				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
 		}
-		if (op1 == -1) {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbgt $t0, $t1, %s\n", midcode[i + 1].argu1);
+		if (bz_flag) {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbgt $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbgt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbgt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbgt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbgt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
 		else {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbgt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tble $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tble $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbgt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tble $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tble $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
+		
 	}
 	else if (midcode[i].type == GREOP) {
 		if (str_is_num(midcode[i].argu1)) {
@@ -780,22 +821,44 @@ void Condition_Hanlder(int i) {
 				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
 		}
-		if (op1 == -1) {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tble $t0, $t1, %s\n", midcode[i + 1].argu1);
+		if (bz_flag) {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tble $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tble $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tble $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tble $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tble $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
 		else {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tble $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbgt $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbgt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tble $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbgt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbgt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
+		
 		}
+		
 	}
 	else if (midcode[i].type == GEQOP) {
 		if (str_is_num(midcode[i].argu1)) {
@@ -834,81 +897,83 @@ void Condition_Hanlder(int i) {
 				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
 		}
-		if (op1 == -1) {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tblt $t0, $t1, %s\n", midcode[i + 1].argu1);
+		if (bz_flag) {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tblt $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tblt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tblt $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tblt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tblt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
 		else {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tblt $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbge $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbge $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tblt $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbge $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbge $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
+		
 		}
+		
 	}
 	else if (midcode[i].type == EQLOP) {
-		if (midcode[i + 1].type == BZ) {
-			if (str_is_num(midcode[i].argu1)) {
-				fprintf(mips_out, "\tli $t0, %s\n", midcode[i].argu1);
-				fprintf(mips_out, "\tbeq $t0, $0, %s\n", midcode[i+1].argu1);
+		if (str_is_num(midcode[i].argu1)) {
+			fprintf(mips_out, "\tli $t0, %s\n", midcode[i].argu1);
+		}
+		else {
+			index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
+			if (index_temp == -1) {
+				fprintf(mips_out, "\tlw $t0, %s\n", midcode[i].argu1);
 			}
-			else {
-				index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
-				if (index_temp == -1) {
-					fprintf(mips_out, "\tlw $t0, %s\n", midcode[i].argu1);
-					fprintf(mips_out, "\tbeq $t0, $0, %s\n", midcode[i + 1].argu1);
-				}
-				else if (index_temp >= 0 && index_temp <= 7) {
-					fprintf(mips_out, "\tbeq $s%d, $0, %s\n",index_temp - ParaNum, midcode[i + 1].argu1);
-				}
-				else {//变量，不在s系寄存器
-					fprintf(mips_out, "\tlw $t0, -%d($fp)\n", addr_temp);
-					fprintf(mips_out, "\tbeq $t0, $0, %s\n", midcode[i + 1].argu1);
-				}
+			else if (index_temp < ParaNum) {
+				fprintf(mips_out, "\tlw $t0, -%d($fp)\n", addr_temp);
+			}
+			else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
+				op1 = index_temp - ParaNum;
+			}
+			else {//变量，不在s系寄存器
+				fprintf(mips_out, "\tlw $t0, -%d($fp)\n", addr_temp);
 			}
 		}
-		else if (midcode[i + 1].type == BNZ) {
-			if (str_is_num(midcode[i].argu1)) {
-				fprintf(mips_out, "\tli $t0, %s\n", midcode[i].argu1);
+		if (str_is_num(midcode[i].argu2)) {
+			fprintf(mips_out, "\tli $t1, %s\n", midcode[i].argu2);
+		}
+		else {
+			index_temp = get_index(midcode[i].argu2, Func_loc, &addr_temp);
+			if (index_temp == -1) {
+				fprintf(mips_out, "\tlw $t1, %s\n", midcode[i].argu2);
 			}
-			else {
-				index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
-				if (index_temp == -1) {
-					fprintf(mips_out, "\tlw $t0, %s\n", midcode[i].argu1);
-				}
-				else if (index_temp < ParaNum) {
-					fprintf(mips_out, "\tlw $t0, -%d($fp)\n", addr_temp);
-				}
-				else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
-					op1 = index_temp - ParaNum;
-				}
-				else {//变量，不在s系寄存器
-					fprintf(mips_out, "\tlw $t0, -%d($fp)\n", addr_temp);
-				}
+			else if (index_temp < ParaNum) {
+				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
-			if (str_is_num(midcode[i].argu2)) {
-				fprintf(mips_out, "\tli $t1, %s\n", midcode[i].argu2);
+			else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
+				op2 = index_temp - ParaNum;
 			}
-			else {
-				index_temp = get_index(midcode[i].argu2, Func_loc, &addr_temp);
-				if (index_temp == -1) {
-					fprintf(mips_out, "\tlw $t1, %s\n", midcode[i].argu2);
-				}
-				else if (index_temp < ParaNum) {
-					fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
-				}
-				else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
-					op2 = index_temp - ParaNum;
-				}
-				else {//变量，不在s系寄存器
-					fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
-				}
+			else {//变量，不在s系寄存器
+				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
+		}
+		if (bz_flag) {
 			if (op1 == -1) {
 				if (op2 == -1) {
 					fprintf(mips_out, "\tbne $t0, $t1, %s\n", midcode[i + 1].argu1);
@@ -926,6 +991,26 @@ void Condition_Hanlder(int i) {
 				}
 			}
 		}
+		else {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbeq $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbeq $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
+			}
+			else {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbeq $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbeq $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
+			}
+		
+		}
+		
 	}
 	else if (midcode[i].type == NEQOP) {
 		if (str_is_num(midcode[i].argu1)) {
@@ -964,21 +1049,43 @@ void Condition_Hanlder(int i) {
 				fprintf(mips_out, "\tlw $t1, -%d($fp)\n", addr_temp);
 			}
 		}
-		if (op1 == -1) {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbeq $t0, $t1, %s\n", midcode[i + 1].argu1);
+
+		if (bz_flag) {
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbeq $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbeq $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbeq $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbeq $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbeq $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
 		}
 		else {
-			if (op2 == -1) {
-				fprintf(mips_out, "\tbeq $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+			if (op1 == -1) {
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbne $t0, $t1, %s\n", midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbne $t0, $s%d, %s\n", op2, midcode[i + 1].argu1);
+				}
 			}
 			else {
-				fprintf(mips_out, "\tbeq $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				if (op2 == -1) {
+					fprintf(mips_out, "\tbne $s%d, $t1, %s\n", op1, midcode[i + 1].argu1);
+				}
+				else {
+					fprintf(mips_out, "\tbne $s%d, $s%d, %s\n", op1, op2, midcode[i + 1].argu1);
+				}
 			}
+
 		}
 	}
 }
@@ -992,7 +1099,7 @@ void Scanf_int_Handler(int i) {
 	int addr_temp = 0;
 	int index_temp;
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
-	fprintf(mips_out, "\tli $v0, 5\n");
+	fprintf(mips_out, "#读取int\n\tli $v0, 5\n");
 	fprintf(mips_out, "\tsyscall \n");
 
 	//如果argu1是数字
@@ -1014,13 +1121,13 @@ void Scnaf_char_Handler(int i) {
 	int addr_temp = 0;
 	int index_temp;
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
-	fprintf(mips_out, "\tli $v0, 12\n");
+	fprintf(mips_out, "#读取char\n\tli $v0, 12\n");
 	fprintf(mips_out, "\tsyscall \n");
 
 	//如果argu1是数字
 	index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
 	if (index_temp == -1) {
-		fprintf(mips_out, "\tsw $v0, %s\n", midcode[i].argu1);
+		fprintf(mips_out, "\tsw $v0, %s\n", midcode[i].result);
 	}
 	else if (index_temp < ParaNum) {
 		fprintf(mips_out, "\tsw $v0, -%d($fp)\n", addr_temp);
@@ -1038,25 +1145,25 @@ void Print_int_Handler(int i) {
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
 
 	if (str_is_num(midcode[i].argu1)) {
-		fprintf(mips_out, "\tli $a0, %s\n", midcode[i].argu1);
+		fprintf(mips_out, "#打印int\n\tli $a0, %s\n", midcode[i].argu1);
 		fprintf(mips_out, "\tli $v0, 1\n\tsyscall\n");
 	}
 	else {
 		index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
 		if (index_temp == -1) {
-			fprintf(mips_out, "\tlw $a0, %s\n", midcode[i].argu1);
+			fprintf(mips_out, "#打印int\n\tlw $a0, %s\n", midcode[i].argu1);
 			fprintf(mips_out, "\tli $v0, 1\n\tsyscall\n");
 		}
 		else if (index_temp < ParaNum) {
-			fprintf(mips_out, "\tlw $a0, -%d($fp)\n", addr_temp);
+			fprintf(mips_out, "#打印int\n\tlw $a0, -%d($fp)\n", addr_temp);
 			fprintf(mips_out, "\tli $v0, 1\n\tsyscall\n");
 		}
 		else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
-			fprintf(mips_out, "\tmove $a0, $s%d\n", index_temp - ParaNum);
+			fprintf(mips_out, "#打印int\n\tmove $a0, $s%d\n", index_temp - ParaNum);
 			fprintf(mips_out, "\tli $v0, 1\n\tsyscall\n");
 		}
 		else {//变量，不在s系寄存器
-			fprintf(mips_out, "\tlw $a0, -%d($fp)\n", addr_temp);
+			fprintf(mips_out, "#打印int\n\tlw $a0, -%d($fp)\n", addr_temp);
 			fprintf(mips_out, "\tli $v0, 1\n\tsyscall\n");
 		}
 	}
@@ -1068,31 +1175,32 @@ void Print_char_Handler(int i) {
 	int ParaNum = Func_tab[Func_loc].num_para;//当前函数的参数个数
 
 	if (str_is_num(midcode[i].argu1)) {
-		fprintf(mips_out, "\tli $a0, %s\n", midcode[i].argu1);
+		fprintf(mips_out, "#打印char\n\tli $a0, %s\n", midcode[i].argu1);
 		fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
 	}
 	else {
 		index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
 		if (index_temp == -1) {
-			fprintf(mips_out, "\tlw $a0, %s\n", midcode[i].argu1);
+			fprintf(mips_out, "#打印char\n\tlw $a0, %s\n", midcode[i].argu1);
 			fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
 		}
 		else if (index_temp < ParaNum) {
-			fprintf(mips_out, "\tlw $a0, -%d($fp)\n", addr_temp);
+			fprintf(mips_out, "#打印char\n\tlw $a0, -%d($fp)\n", addr_temp);
 			fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
 		}
 		else if (index_temp >= ParaNum && index_temp <= ParaNum + 7) {
-			fprintf(mips_out, "\tmove $a0, $s%d\n", index_temp - ParaNum);
+			fprintf(mips_out, "#打印char\n\tmove $a0, $s%d\n", index_temp - ParaNum);
 			fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
 		}
 		else {//变量，不在s系寄存器
-			fprintf(mips_out, "\tlw $a0, -%d($fp)\n", addr_temp);
+			fprintf(mips_out, "#打印char\n\tlw $a0, -%d($fp)\n", addr_temp);
 			fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
 		}
 	}
 }
 void Print_str_Handler(int i) {
-	fprintf(mips_out, "\tla $a0, %s\n", midcode[i].argu1);
+	
+	fprintf(mips_out, "#打印str\n\tla $a0, %s\n",midcode[i].argu1);//?
 	fprintf(mips_out, "\tli $v0, 4\n\tsyscall\n");
 }
 void Ret_Expr_Handler(int i) {
@@ -1118,6 +1226,7 @@ void Ret_Expr_Handler(int i) {
 			fprintf(mips_out, "\tlw $v0, -%d($fp)\n", addr_temp);
 		}
 	}
+	fprintf(mips_out, "\tlw $fp, 4($sp)\n\tlw $ra, 8($sp)\n");
 	for (int w = 0; w < Func_tab[Func_loc].num_var - Func_tab[Func_loc].num_para && w < 8; w++) {
 		fprintf(mips_out, "\tlw $s%d, %d($sp)\n", w,40-w*4);
 	}
@@ -1130,7 +1239,7 @@ void Ret_null_Handler(int i) {
 		fprintf(mips_out, "\tli $v0, 10\n\tsyscall\n");
 	}
 	else {
-		fprintf(mips_out, "\tlw $fp, 4($sp)\n\tlw $ra,8($sp)\n");
+		fprintf(mips_out, "\tlw $fp, 4($sp)\n\tlw $ra, 8($sp)\n");
 		for (int w = 0; w < Func_tab[Func_loc].num_var - Func_tab[Func_loc].num_para && w < 8; w++) {
 			fprintf(mips_out, "\tlw $s%d, %d($sp)\n", w, 40 - w * 4);
 		}
@@ -1139,10 +1248,15 @@ void Ret_null_Handler(int i) {
 	}
 }
 
+void Print_newline() {
+	fprintf(mips_out, "#换行\n\tli $a0, 10\n");
+	fprintf(mips_out, "\tli $v0, 11\n\tsyscall\n");
+}
 void mips() {
 	int i = 0;
 	int j = 0;
 	fprintf(mips_out, ".data\n");
+	char str_name[idlen];
 	for (i = 0; i < tab_loc; i++) {
 		if (tab[i].type == var_int || tab[i].type == var_char) {
 			fprintf(mips_out, "\t%s:.word 0\n", tab[i].id);
@@ -1157,7 +1271,9 @@ void mips() {
 	*/
 	for (i = 0; i < midcode_loc; i++) {
 		if (midcode[i].type == PRINT_STR) {
-			fprintf(mips_out, "\t%s:.asciiz \"%s\"\n",str_name_gen(), midcode[i].argu1);
+			str_cpy( str_name_gen(),str_name);
+			fprintf(mips_out, "\t%s:.asciiz \"%s\"\n",str_name, midcode[i].argu1);
+			str_cpy(str_name, midcode[i].argu1);
 		}
 	}
 	/*
@@ -1165,13 +1281,13 @@ void mips() {
 		变量只有函数内定义的变量和$开头的临时变量
 	*/
 	for (i = 0; i < midcode_loc; i++) {
-		if (midcode[i].type >= 10 || midcode[i].type <= 12) {//函数
+		if (midcode[i].type >= 10 && midcode[i].type <= 12) {//函数
 			Para_loc = 0;
 			Var_loc = 0;
 			Var_addr = 0;
 			str_cpy(midcode[i].argu1, Func_tab[Func_loc].func_name);
 			for (j = i + 1; j < midcode_loc; j++) {
-				if ((midcode[j].type >= 10 || midcode[j].type <= 12) || j + 1 == midcode) {
+				if ((midcode[j].type >= 10 && midcode[j].type <= 12) || j + 1 == midcode_loc) {
 					Func_tab[Func_loc].size = Var_addr;
 					Func_tab[Func_loc].num_para = Para_loc;
 					Func_tab[Func_loc].num_var = Var_loc;
@@ -1182,19 +1298,19 @@ void mips() {
 					if (midcode[j].type == PARA_INT || midcode[j].type == PARA_CHAR) {
 						Para_loc++;
 					}
-					str_cpy(midcode[i].argu1, Func_tab[Func_loc].var_tab[Var_loc].var_name);
+					str_cpy(midcode[j].argu1, Func_tab[Func_loc].var_tab[Var_loc].var_name);
 					Func_tab[Func_loc].var_tab[Var_loc].addr = Var_addr;
 					Var_loc++;
 					Var_addr += 4;
 				}
 				else if (midcode[j].type == ARRAY_INT || midcode[j].type == ARRAY_CHAR) {
-					str_cpy(midcode[i].argu1, Func_tab[Func_loc].var_tab[Var_loc].var_name);
+					str_cpy(midcode[j].argu1, Func_tab[Func_loc].var_tab[Var_loc].var_name);
 					Func_tab[Func_loc].var_tab[Var_loc].addr = Var_addr;
 					Var_loc++;
 					Var_addr += 4 * midcode[j].value;
 				}
 				else if (midcode[j].type != DEL && midcode[j].result[0] == '$') {
-					str_cpy(midcode[i].result, Func_tab[Func_loc].var_tab[Var_loc].var_name);
+					str_cpy(midcode[j].result, Func_tab[Func_loc].var_tab[Var_loc].var_name);
 					Func_tab[Func_loc].var_tab[Var_loc].addr = Var_addr;
 					Var_loc++;
 					Var_addr += 4;
@@ -1294,8 +1410,10 @@ void mips() {
 			Ret_null_Handler(i);
 			break;
 		case PRINT_NEWLINE:
+			Print_newline();
 			break;
 		default:
+			//printf("%d\n",midcode[i].type);
 			break;
 		}
 	}

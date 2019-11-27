@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #define idlen 1024//接收标识符的有效长度
 #define tab_size 1024//符号表最大长度
 #define token_len 1024//token数组最大长度
@@ -303,6 +302,7 @@ char* id_name_gen();
 void print_midcode();
 char* label_name_gen();
 char* numtostr(int num);
+void delconst();
 
 
 //mips目标代码

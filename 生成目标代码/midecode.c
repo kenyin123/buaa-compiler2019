@@ -3,7 +3,6 @@
 #include<stdlib.h>
 #include <ctype.h>
 #include"global.h"
-
 /*
 符号表
 struct str_tab {
@@ -36,6 +35,7 @@ int midcode_loc = 0;
 int id_name_num = 0;//临时变量名计数
 int label_name_num = 0;
 
+//a复制给给b
 void str_cpy(char* str1, char* str2) {
 	int i;
 	for (i = 0; str1[i]!='\0'; i++) {
@@ -321,6 +321,9 @@ void print_midcode() {
 			fprintf(midcode_out, "return null\n");
 			break;
 		}
+		case PRINT_NEWLINE: {
+			break;
+		}
 		case DEL: {
 			break;
 		}
@@ -331,19 +334,66 @@ void print_midcode() {
 	}
 }
 char* id_name_gen() {
-	char id_name[idlen];
-	sprintf_s(id_name,idlen, "$$%d", id_name_num++);
+	static char id_name[idlen];
+	sprintf(id_name, "$$%d", id_name_num++);
 	return id_name;
 }
 
 char* label_name_gen() {
-	char label_name[idlen];
-	sprintf_s(label_name, idlen, "Label%d", label_name_num++);
+	static char label_name[idlen];
+	sprintf(label_name,"Label%d", label_name_num++);
 	return label_name;
 }
 char* numtostr(int num) {
 	static char temp[idlen];
-	sprintf_s(temp, idlen, "%d", num);
+	sprintf(temp, "%d", num);
 	return temp;
+}
+void delconst() {
+	int i = 0;
+	int j, k;
+	while (i < midcode_loc) {
+		for (; (midcode[i].type < 10 || midcode[i].type>12) && i < midcode_loc; i++);
+		for (j = i + 1; j < midcode_loc; j++) {
+			if (midcode[j].type == 0 || midcode[j].type == 1) {
+				for (k = j + 1; k < midcode_loc; k++) {
+					if (strcmp(midcode[k].argu1, midcode[j].argu1) == 0) {
+						str_cpy(numtostr(midcode[j].value), midcode[k].argu1);
+					}
+					else if (strcmp(midcode[k].argu2, midcode[j].argu1) == 0) {
+						str_cpy(numtostr(midcode[j].value), midcode[k].argu2);
+					}
+				}
+			}
+			if (midcode[j].type >= 10 && midcode[j].type <= 12)break;
+		}
+		i++;
+	}
+
+	/*
+		替换全局常量，碰到局部常量或者变量就不替换
+	*/
+	int Func = 0;
+	int index = 0;
+	for (i = 0; midcode[i].type == 0 || midcode[i].type == 1; i++) {
+		Func = 0;
+		for (j = i + 1; j < midcode_loc; j++) {
+			if (midcode[j].type >= 10 && midcode[j].type <= 10) {
+				Func++;
+			}
+			if (strcmp(midcode[j].argu1, midcode[i].argu1) == 0) {
+				index = searchtab(midcode[j].argu1, Func);
+				if (tab[index].lev == 0) {
+					str_cpy(numtostr(midcode[i].value), midcode[j].argu1);
+				}
+			}
+			else if (strcmp(midcode[j].argu2, midcode[i].argu1) == 0) {
+				index = searchtab(midcode[j].argu2, Func);
+				if (tab[index].lev == 0) {
+					str_cpy(numtostr(midcode[i].value), midcode[j].argu2);
+				}
+			}
+		}
+	}
 }
 

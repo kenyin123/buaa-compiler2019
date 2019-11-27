@@ -1,4 +1,5 @@
 ﻿#pragma warning(disable:4996)
+
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -201,7 +202,7 @@ int Var_Declaration(int field_flag) {
 		getsym(1);
 		if (symbol == LPARENT) {
 			symbol_error_gh = symbol_temp;
-			entertab(token_temp, (symbol_temp == INTTK)? return_int_func: return_char_func, NULL, addr, field_flag);
+			entertab(token_temp, (symbol_temp == INTTK)? return_int_func: return_char_func,NULL , addr, field_flag);
 			num_func++;
 			insert_midcode((symbol_temp == INTTK) ? FUNC_INT : FUNC_CHAR, token_temp, NULL, NULL, 0);
 			fprintf(grammar_out, "<声明头部>\n");
@@ -655,7 +656,7 @@ void condition() {
 		insert_midcode(sym_relation - 1, largu, rargu, NULL, 0);
 	}
 	else {
-		insert_midcode(NEQOP, largu, NULL, NULL, 0);//?
+		insert_midcode(NEQOP, largu, numtostr(0), NULL, 0);//?
 	}
 	fprintf(grammar_out, "<条件>\n");
 	printf("<条件>\n");
@@ -768,14 +769,11 @@ void for_Handler() {
 	int sym_relation;
 	char largu[idlen];
 	char rargu[idlen];
-	int condition_flag;//是哪一种条件
 	char label_1[idlen]; 
 	str_cpy(label_name_gen(),label_1);
 	char label_2[idlen];
 	str_cpy(label_name_gen(), label_2);
 	//加减法
-	int j_2;
-	int j_3;
 	int sym_op;
 	char argu1[idlen];
 	char argu2[idlen];
@@ -807,40 +805,22 @@ void for_Handler() {
 	if (symbol != SEMICN)error(11);
 
 	//条件初始化
+	insert_midcode(SETLABEL, label_1, NULL, NULL, 0);
 	getsym(0);
-	if (Expression() == 0)error(0);
-	if (expr_is_char == 1)error(6);
-	str_cpy(midcode[midcode_loc - 1].result, largu);
-	if (isRelation(symbol)) {
-		condition_flag = 1;
-		sym_relation = symbol;
-		print_symbol(symbol);
-		getsym(0);
-		if (Expression() == 0)error(0);
-		if (expr_is_char == 1)error(6);
-		str_cpy(midcode[midcode_loc - 1].result, rargu);
-		//insert_midcode(sym_relation - 1, largu, rargu, NULL, 0);
-	}
-	else {
-		condition_flag = 0;
-		//insert_midcode(NEQOP, largu, NULL, NULL, 0);//?
-	}
-	//insert_midcode(BZ, label_1, NULL, NULL, 0);
+	condition();
 	if (symbol != SEMICN)error(11);
+	insert_midcode(BZ, label_2, NULL, NULL, 0);
 
 	//加减法
 	getsym(0);//A
 	if (symbol != IDENFR)error(0);
-	j_2 = searchtab(token, num_func);
-	if (j_2 == -1)error(0);
+	str_cpy(token, result);
 
 	getsym(0);//=
 	if (symbol != ASSIGN)error(0);
 	
 	getsym(0);//B
 	if (symbol != IDENFR)error(0);
-	j_3 = searchtab(token, num_func);
-	if (j_3 == -1)error(0);
 	str_cpy(token, argu1);
 	
 	getsym(0);//+-
@@ -853,22 +833,13 @@ void for_Handler() {
 	getsym(0);
 	if (symbol != RPARENT)error(12);
 
-	insert_midcode(SETLABEL, label_2, NULL, NULL, 0);
-	if (condition_flag) {
-		insert_midcode(sym_relation - 1, largu, rargu, NULL, 0);
-	}
-	else {
-		insert_midcode(NEQOP, largu, NULL, NULL, 0);
-	}
-	insert_midcode(BZ, label_1, NULL, NULL, 0);
-
 	getsym(0);//语句
 	statementHandler();
 
-	insert_midcode((sym_op == PLUS)?PLUSOP:MINUOP, argu1, argu2, midcode[j_2].result, 0);//加减
-	insert_midcode(GOTO, label_2, NULL, NULL, 0);//循环
+	insert_midcode((sym_op == PLUS)?PLUSOP:MINUOP, argu1, argu2, result, 0);//加减
+	insert_midcode(GOTO, label_1, NULL, NULL, 0);//循环
+	insert_midcode(SETLABEL, label_2, NULL, NULL, 0);//条件不符合，结束循环
 	
-	insert_midcode(SETLABEL, label_1, NULL, NULL, 0);
 	fprintf(grammar_out, "<循环语句>\n");
 	printf("<循环语句>\n");
 }
@@ -1068,6 +1039,7 @@ void printf_Handler() {
 		print_symbol(symbol);
 	}
 	else error(0);
+	insert_midcode(PRINT_NEWLINE, NULL, NULL, NULL, 0);
 }
 void return_Handler() {
 	getsym(1);
@@ -1139,6 +1111,7 @@ int unreturn_func_definition() {
 	fprintf(grammar_out, "<无返回值函数定义>\n");
 	printf("<无返回值函数定义>\n");
 	getsym(0);
+	insert_midcode(RET_NULL, NULL, NULL, NULL, 0);//？无返回值函数最后给它加个return null
 	return 0;
 }
 void mainfunc() {
@@ -1204,6 +1177,7 @@ int main() {
 	program();
 	printtab();
 	print_midcode();
+	delconst();
 	mips();
 
 	fclose(fp_in);
