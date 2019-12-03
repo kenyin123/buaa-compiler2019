@@ -525,7 +525,7 @@ void Array_Assign_Handler(int i) {
 		fprintf(mips_out, "\tmul $t1, $t1, $t2\n");
 	}
 	else {
-		fprintf(mips_out, "\tmul $t2, $s%d, $t2\n",op1);
+		fprintf(mips_out, "\tmul $t1, $s%d, $t2\n",op1);
 	}
 	//array[t1] = t2
 	if (str_is_num(midcode[i].argu2)) {
@@ -599,7 +599,7 @@ void Array_Access_Handler(int i) {
 		fprintf(mips_out, "\tmul $t1, $t1, $t2\n");
 	}
 	else {
-		fprintf(mips_out, "\tmul $t2, $s%d, $t2\n", op1);
+		fprintf(mips_out, "\tmul $t1, $s%d, $t2\n", op1);
 	}
 	//t2 = array[t1]
 	if (global_flag) {

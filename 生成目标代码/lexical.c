@@ -225,6 +225,9 @@ int getsym(int flag)
 	else if (ch == '\"') {
 		ch = fgetc(fp_in);
 		while (ch == 32 || ch == 33 || (ch >= 35 && ch <= 126)) {
+			if (ch == 92) {
+				catToken(ch);
+			}
 			catToken(ch);
 			ch = fgetc(fp_in);
 		}
