@@ -1125,7 +1125,7 @@ void mainfunc() {
 	getsym(0);
 	if (symbol != LBRACE)error(0);
 	getsym(1);
-	complex_statement(0);
+	complex_statement(1);
 	if (symbol != RBRACE)error(0);
 	fprintf(grammar_out, "<主函数>\n");
 	printf("<主函数>\n");

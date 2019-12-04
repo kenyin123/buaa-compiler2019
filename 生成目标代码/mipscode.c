@@ -1127,7 +1127,7 @@ void Scnaf_char_Handler(int i) {
 	//如果argu1是数字
 	index_temp = get_index(midcode[i].argu1, Func_loc, &addr_temp);
 	if (index_temp == -1) {
-		fprintf(mips_out, "\tsw $v0, %s\n", midcode[i].result);
+		fprintf(mips_out, "\tsw $v0, %s\n", midcode[i].argu1);
 	}
 	else if (index_temp < ParaNum) {
 		fprintf(mips_out, "\tsw $v0, -%d($fp)\n", addr_temp);

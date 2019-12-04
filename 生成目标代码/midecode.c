@@ -49,17 +49,15 @@ void entertab(char* id, int type, int value, int addr, int lev){
 		error(0);
 	}
 	int i;
-	if (lev == 0) {
+	if (lev == 0 || (type >= 6 && type <= 8 )) {
 		for (i = 0; i < tab_loc; i++) {
-			if (tab[i].lev == 0) {
-				if (strcmp(tab[i].id, id) == 0) {
-					error(2);
-					return;
-				}
+			if (strcmp(tab[i].id, id) == 0) {
+				error(2);
+				return;
 			}
 		}
 	}
-	else {
+	else if(lev == 1) {
 		for (i = tab_loc - 1; tab[i].type != 6 && tab[i].type != 7 && tab[i].type != 8; i--) {
 			if (strcmp(tab[i].id, id) == 0) {
 				error(2);
@@ -378,7 +376,7 @@ void delconst() {
 	for (i = 0; midcode[i].type == 0 || midcode[i].type == 1; i++) {
 		Func = 0;
 		for (j = i + 1; j < midcode_loc; j++) {
-			if (midcode[j].type >= 10 && midcode[j].type <= 10) {
+			if (midcode[j].type >= 10 && midcode[j].type <= 12) {
 				Func++;
 			}
 			if (strcmp(midcode[j].argu1, midcode[i].argu1) == 0) {
