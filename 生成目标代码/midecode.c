@@ -351,7 +351,7 @@ void delconst() {
 	int i = 0;
 	int j, k;
 	while (i < midcode_loc) {
-		for (; (midcode[i].type < 10 || midcode[i].type>12) && i < midcode_loc; i++);
+		for (; !(midcode[i].type >= 10 || midcode[i].type <= 12) && i < midcode_loc; i++);
 		for (j = i + 1; j < midcode_loc; j++) {
 			if (midcode[j].type == 0 || midcode[j].type == 1) {
 				for (k = j + 1; k < midcode_loc; k++) {
@@ -361,6 +361,7 @@ void delconst() {
 					else if (strcmp(midcode[k].argu2, midcode[j].argu1) == 0) {
 						str_cpy(numtostr(midcode[j].value), midcode[k].argu2);
 					}
+					else if (midcode[k].type >= 10 && midcode[k].type <= 12)break;
 				}
 			}
 			if (midcode[j].type >= 10 && midcode[j].type <= 12)break;

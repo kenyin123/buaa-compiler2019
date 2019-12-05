@@ -429,10 +429,11 @@ int Factor() {
 		}
 		else if (symbol == LPARENT) {
 			j = searchtab(token_temp, num_func);
-			if (tab[j].type == return_char_func)expr_is_char = 1;
-			else if (tab[j].type != return_int_func)error(0);
 			print_symbol(symbol);
 			call_fun_Handler(token_temp);
+			expr_is_char = 0;
+			if (tab[j].type == return_char_func)expr_is_char = 1;
+			else if (tab[j].type != return_int_func)error(0);
 			fprintf(grammar_out, "<因子>\n");
 			printf("<因子>\n");
 			insert_midcode(VAR_ASSIGN, midcode[midcode_loc - 1].result, NULL, id_name_gen(), 0);
@@ -1111,7 +1112,9 @@ int unreturn_func_definition() {
 	fprintf(grammar_out, "<无返回值函数定义>\n");
 	printf("<无返回值函数定义>\n");
 	getsym(0);
-	insert_midcode(RET_NULL, NULL, NULL, NULL, 0);//？无返回值函数最后给它加个return null
+	if (strlen(return_array) == 0) {
+		insert_midcode(RET_NULL, NULL, NULL, NULL, 0);//？无返回值函数没有return的话最后给它加个return null
+	}
 	return 0;
 }
 void mainfunc() {
