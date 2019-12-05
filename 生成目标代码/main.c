@@ -1112,9 +1112,7 @@ int unreturn_func_definition() {
 	fprintf(grammar_out, "<无返回值函数定义>\n");
 	printf("<无返回值函数定义>\n");
 	getsym(0);
-	if (strlen(return_array) == 0) {
-		insert_midcode(RET_NULL, NULL, NULL, NULL, 0);//？无返回值函数没有return的话最后给它加个return null
-	}
+	insert_midcode(RET_NULL, NULL, NULL, NULL, 0);//？无返回值函数最后给它加个return null
 	return 0;
 }
 void mainfunc() {
